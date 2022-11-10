@@ -1,0 +1,314 @@
+<template>
+  <div class="page" data-name="pd_sinkronisasi">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="/home/" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">PERUMDA-SYNC</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block">
+        <a href="#" @click="hapusAll" class="button button-fill color-red">Hapus Semua Data Lokal ({{appmode}})</a>
+      </div>
+      <div class="block">
+        <a href="#" @click="kirimAll" class="button button-fill color-red">Kirim Semua</a>
+      </div>
+      <div class="list">
+        <ul>
+          {{#each datalocal}}
+          <li>
+            <div class="row">
+              <div class="col-30 text-align-right">{{this.norek}}</div>
+              <div class="col-30">{{this.namapelanggan}}</div>
+              <div class="col-40">
+                <a href="#" class="button button-fill color-orange" @click="resend('{{this.norek}}')">Kirim</a>
+              </div>
+            </div>
+          </li>
+          {{/each}}
+
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+</template>
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  .row {
+    height: 40px;
+  }
+
+  .row .label {
+    font-size: 17px;
+    font-weight: bold;
+    padding: 5px;
+
+  }
+</style>
+<script>
+  export default {
+
+    data: function () {
+
+      return {
+        waktu: '--',
+        info: {},
+        operator: '',
+        datalocal: [],
+        appmode: ''
+
+      }
+    },
+
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var nsObj = app.data.nsObj
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+
+        /*if(indexObj.cekInternet() == true)
+         {
+          // alert('on')
+           
+         }else
+         {
+           //alert('off')
+         }*/
+        this.$setState({ appmode: app.data.user.appmode })
+        var self = this
+        nsObj.getData("DATALOKAL", function (dat) {
+          //alert('data local '+dat)
+          if (dat != 'undefined') {
+            self.loadDataLocal(dat)
+          }
+        })
+
+
+      }, sendDataMeter: function (info, index) {
+        var app = this.$app;
+        app.preloader.show();
+        var router = this.$f7router;
+        var nsObj = app.data.nsObj
+        var no = index
+        //file:
+        // var imageURI = app.data.gambarinfo;
+        var imageURI = info.imageURI;
+        var options = new FileUploadOptions();
+        options.fileKey = "file";
+        options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
+        options.mimeType = "image/jpeg";
+        var params = {};
+        // params.value1 = "test";
+        //params.value2 = "param";
+        info.imageURI = ""
+        options.params = info;
+
+        options.chunkedMode = false;
+        options.headers = {
+          Connection: "close"
+        }
+        /*
+        options.headers = { Accept: 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'Cache-Control':'no-cache'
+                                    }
+         */
+        var self = this
+        var kirim_uri = ""
+        if (app.data.user.appmode == "prod") {
+          kirim_uri = "kirimdata.php"
+        } else if (app.data.user.appmode == "dev") {
+          kirim_uri = "kirimdata2.php"
+        }
+
+        var uri = encodeURI(app.data.config.mainServer + kirim_uri)
+        var ft = new FileTransfer();
+        ft.upload(imageURI, uri,
+          function (result) {
+            console.log('sukses : ' + JSON.stringify(result));
+            app.preloader.hide();
+            app.dialog.alert("Terima Kasih, Laporan Pelanggan Berhasil dikirim", "PERUMDA", function () {
+              var curdata = self.datalocal
+              curdata.splice(no, 1)
+              self.$setState({ datalocal: curdata })
+              nsObj.saveData("DATALOKAL", JSON.stringify(curdata))
+
+            })
+
+          },
+          function (error) {
+            console.log('Error : ' + JSON.stringify(error));
+            app.preloader.hide();
+            app.dialog.alert("Maaf, laporan gagal dikirim mungkin karena koneksi. mohon diulang!", "PERUMDA", function () {
+
+            })
+          }, options);
+      },
+
+      sendDataMeter2: function (info, index, batas) {
+        var app = this.$app;
+        app.preloader.show();
+        var router = this.$f7router;
+        var nsObj = app.data.nsObj
+        var no = index
+        //file:
+        // var imageURI = app.data.gambarinfo;
+        var imageURI = info[no].imageURI;
+        var options = new FileUploadOptions();
+        options.fileKey = "file";
+        options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
+        options.mimeType = "image/jpeg";
+        var params = {};
+        // params.value1 = "test";
+        //params.value2 = "param";
+        info[no].imageURI = ""
+        options.params = info[no];
+
+        options.chunkedMode = false;
+        options.headers = {
+          Connection: "close"
+        }
+        /*
+        options.headers = { Accept: 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'Cache-Control':'no-cache'
+                                    }
+         */
+        var self = this
+        var kirim_uri = ""
+        if (app.data.user.appmode == "prod") {
+          kirim_uri = "kirimdata.php"
+        } else if (app.data.user.appmode == "dev") {
+          kirim_uri = "kirimdata2.php"
+        }
+
+        if (no < batas) {
+          var uri = encodeURI(app.data.config.mainServer + kirim_uri)
+          var ft = new FileTransfer();
+          var info_ = info
+          ft.upload(imageURI, uri,
+            function (result) {
+              console.log('sukses : ' + JSON.stringify(result));
+              app.preloader.hide();
+
+              var curdata = self.datalocal
+              // curdata.splice(no,1)
+              self.$setState({ datalocal: curdata })
+              nsObj.saveData("DATALOKAL", JSON.stringify(curdata))
+
+              no++
+              self.sendDataMeter2(info_, no, batas)
+
+            },
+            function (error) {
+              console.log('Error : ' + JSON.stringify(error));
+              no++
+              self.sendDataMeter2(info_, no, batas)
+
+            }, options);
+
+
+
+        } else {
+          //lebih besar stop
+          app.preloader.hide();
+          self.datalocal = []
+          nsObj.removeData("DATALOKAL")
+          app.dialog.alert("Semua data telah berhasil di Kirim ke Server")
+
+        }
+
+
+      },
+      loadDataLocal: function (dat) {
+        var app = this.app
+        var data = JSON.parse(dat)
+        console.log(data)
+        this.$setState({ datalocal: data })
+        // 
+      },
+
+      hapusAll: function () {
+        var app = this.$app
+        var nsObj = app.data.nsObj
+        var self = this
+        app.dialog.confirm("Perhatian, Semua data Lokal akan dihapus. Apakah anda akan melanjutkan proses ini?", function () {
+          nsObj.removeData("DATALOKAL")
+          self.$setState({ datalocal: [] })
+        },
+          function () {
+
+          })
+
+      },
+
+      resend: function (norek) {
+        var app = this.$app
+        var jsonpObj = app.data.jsonpObj
+        var index = this.findIndex(norek, this.datalocal, "norek")
+        var dat = this.datalocal[index]
+        var self = this
+        app.dialog.confirm("Apakah Data ini (" + dat.namapelanggan + ") akan Anda Kirim ke Server?",
+          function () {
+            self.sendDataMeter(dat, index)
+          }, null)
+
+
+        //alert(JSON.stringify(dat)) 
+      }
+      ,
+      kirimAll: function () {
+        var app = this.$app
+        var jsonpObj = app.data.jsonpObj
+
+        var dat = this.datalocal
+        var batas = dat.length
+        var self = this
+        app.dialog.confirm("Apakah Semau Data akan Anda Kirim ke Server?",
+          function () {
+            if (batas > 0) {
+              self.sendDataMeter2(dat, 0, batas)
+            } else {
+              app.data.alert('Maaf tidak data yang akan dikirimkan')
+            }
+          }, null)
+
+      }
+      ,
+      findIndex(key, arr, col) {
+        var rsl = -1
+        for (var i in arr) {
+          if (arr[i][col] == key) {
+            rsl = i
+            break
+          }
+        }
+        return rsl
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

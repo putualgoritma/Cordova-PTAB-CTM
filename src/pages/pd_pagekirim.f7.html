@@ -1,0 +1,487 @@
+<template>
+  <div class="page" data-name="pd_pagekirim">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="/pd_bacameter/" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">PENCATATAN METER</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="block">
+        <div class="text-align-center">{{waktu}}</div>
+        <div class="text-align-center">
+          <h3>PERUMDA TIRTA AMERTHA BUANA TABANAN</h3>
+        </div>
+      </div>
+
+      <div class="block">
+        <h2>Data Pelanggan</h2>
+      </div>
+      <div class="block">        
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. SBG</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.norek}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Nama </div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.namapelanggan}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Alamat</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.alamat}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Golongan</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.idgol}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. Telp</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.telp}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Tgl. Pasang</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.tgltersambung}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. WM</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmnomor}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Diameter WM</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmukuran}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Angka Meter</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmmeteran}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">WM. Status</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.namastatus}}</div>
+        </div>       
+
+        <br>
+        <br>
+        <br>
+
+        <div class="row">
+          <div class="col-100">
+            <a href="#" @click="kirimtest" class="button button-fill button-big">TEST KIRIM DATA</a>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <h2>Operator : {{operator}}</h2>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-100">
+            <img src="{{imageSrc}}" style="width: 100%;" id="myImage">
+          </div>
+        </div>
+
+
+
+      </div>
+
+    </div>
+
+  </div>
+</template>
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  .row {
+    height: 40px;
+  }
+
+  .row .label {
+    font-size: 17px;
+    font-weight: bold;
+    padding: 5px;
+
+  }
+</style>
+
+
+<script>
+  // var atob = require('../cs/')
+  export default {
+    data: function () {
+
+      return {
+        imguri: '',
+        info: {},
+        operator: '',
+        imgtest: '',
+        imageSrc: './static/images/wmmeter.png',
+      }
+    },
+
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var dataString = 'username=' + username
+        var imguri = app.data.gambarinfo
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+        var thari = waktu.split(',')
+        var nhari = parseInt(thari[0])
+        var namahari = hari[nhari]
+        var waktu = namahari + ', ' + thari[1];
+
+        this.$setState({ waktu: waktu })
+        this.$setState({ operator: app.data.loginfo.Name })
+        var pinfo = app.data.pinfo
+        var wminfo = app.data.wminfo
+        var gambarinfo = app.data.gambarinfo
+        var locationgmap = app.data.locationgmap
+        var datelog = app.data.datelog
+
+        //alert('status sm '+app.data.pinfo.statussmprev)
+        alert('test mode')
+
+        var kontak = pinfo.telp
+        if (pinfo.telp == "" || pinfo.telp.length < 5) {
+          kontak = pinfo.nomorhp
+        }
+
+        //cek if wmstatus == manual & namastatus!='terbaca' & namastatus!=109 stand kembali
+        if (app.data.wminfo.wmstatus == 'manual' && app.data.wminfo.namastatus != 'terbaca' && app.data.wminfo.namastatus != 109) {
+          app.data.pinfo.pencatatanmeterprev = 0;
+        }
+        //set pencatatanmeterprev = 0
+        //cek if stand tunggu atau stand kembali
+        if (app.data.wminfo.namastatus == 109 || app.data.wminfo.namastatus == 110) {
+          //set stand tunggu
+          if (app.data.wminfo.namastatus == 110) {
+            app.data.wminfo.meteran = app.data.pinfo.pencatatanmeterprev
+          }
+          //set stand kembali
+          if (app.data.wminfo.namastatus == 109) {
+            //if bulan lalu status tidak 'stand kembali' meteran -> +1 digit
+            if (app.data.pinfo.statussmprev != '109') {
+              var pencatatanmeterprev_str= app.data.pinfo.pencatatanmeterprev.toString()
+              //get num digit base on pencatatanmeterprev
+              var digit_num = pencatatanmeterprev_str.length + 1
+              var inc_max = digit_num - app.data.wminfo.meteran.length
+              var meteran_str = app.data.wminfo.meteran
+              //alert('digit_num '+digit_num+'inc_max '+inc_max+'meteran_str '+meteran_str)
+              var inc
+              var inc_last
+              for (inc = 0; inc < inc_max; inc++) {
+                inc_last = inc + 1;
+                if (inc_last == inc_max) {
+                  meteran_str = '1' + meteran_str
+                } else {
+                  meteran_str = '0' + meteran_str
+                }
+              }
+              app.data.wminfo.meteran = parseInt(meteran_str)
+            } else {
+              //else if bulan lalu status 'stand kembali' pencatatanmeterprev -> -1 digit
+              app.data.pinfo.pencatatanmeterprev = parseInt(app.data.pinfo.pencatatanmeterprev.substring(1))
+              //reset to terbaca
+              app.data.wminfo.namastatus = 'terbaca'
+            }
+          }
+          //set pemakaian
+          app.data.wminfo.pemakaian = app.data.wminfo.meteran - app.data.pinfo.pencatatanmeterprev;
+        }
+        if (app.data.wminfo.namastatus == 'terbaca') {
+          app.data.wminfo.namastatus = '-';
+        }
+
+        var info = {
+          norek: pinfo.nomorrekening,
+          namapelanggan: pinfo.namapelanggan,
+          alamat: pinfo.alamat,
+          jenispelanggan: pinfo.jenispelanggan,
+          telp: kontak,
+          tgltersambung: pinfo.tgltersambung,
+          wmnomor: pinfo.wmnomor,
+          wmukuran: pinfo.wmukuran,
+          wmmeteran: wminfo.meteran,
+          wmstatus: wminfo.wmstatus,
+          namastatus: wminfo.namastatus,
+          hitung: wminfo.hitung,
+          opp: wminfo.opp,
+          lat: locationgmap.lat,
+          lng: locationgmap.lng,
+          accuracy: locationgmap.accuracy,
+          datecatatf1: datelog.datecatatf1,
+          datecatatf2: datelog.datecatatf2,
+          datecatatf3: datelog.datecatatf3,
+          operator: app.data.loginfo.Name,
+          nomorpengirim: app.data.loginfo.Number,
+          pencatatanmeterprev: pinfo.pencatatanmeterprev,
+          statussmprev: pinfo.statussmprev,          
+          idgol: pinfo.idgol
+        }
+        this.$setState({ info: info })
+        this.$setState({ imageSrc: app.data.gambarinfo })
+        //var getinfo={norek:data.nomorrekening,namapelanggan:data.namapelanggan,alamat:data.alamat,jenispelanggan:data.jenispelanggan,telp:data.telp,tgltersambung:data.tgltersambung,wmnomor:data.wmnomor,wmukuran:data.wmukuran}   
+        // var data ={wmstatus:this.tipestatus,namastatus:tipebaca,meteran:meteran,hitung:'manual',opp:username}
+
+
+      },
+      kirimtest: function () {
+        var app = this.$app
+        // var str_out = 'No. Rekening: ' + this.info.norek + ', Operator: ' + this.info.operator + ', Angka Meter: ' + this.info.wmmeteran + ', Lat: ' + this.info.lat + ', Lng: ' + this.info.lng + ', Tgl. Catat: ' + this.info.datecatatf3
+        // alert(str_out)
+        var info_data = JSON.stringify(this.info)
+        alert(info_data)
+      },
+      kirim: function () {
+        var app = this.$app
+        var jq = app.data.JQ
+        var router = this.$f7router;
+        var indexObj = app.data.indexObj;
+        var nsObj = app.data.nsObj;
+        var self = this
+        //console.log(this.info)
+        var now = app.data.Moment2().tz("Asia/Makassar").format("DD/MM/YYYY HH:mm:ss");
+
+        var then = app.data.tawal_cek
+        var ms = app.data.Moment(now, "DD/MM/YYYY HH:mm:ss").diff(app.data.Moment(then, "DD/MM/YYYY HH:mm:ss"));
+        var d = app.data.Moment.duration(ms);
+        var s = Math.floor(d.asHours()) + app.data.Moment.utc(ms).format(":mm:ss");
+        // alert(s)
+        var pecah = s.split(":");
+        var jam = parseInt(pecah[0]);
+        var menit = parseInt(pecah[1]);
+        //var detik = parseInt(pecah[0]);
+        var loginfo = app.data.loginfo;
+        var jeda = app.data.jeda_cek
+        var str_out = 'No. Rekening: ' + this.info.norek + ', Operator: ' + this.info.operator + ', Angka Meter: ' + this.info.wmmeteran + ', Tgl. Catat: ' + this.info.datecatatf1
+        if (jam == 0) {
+          if (menit < jeda) {
+            //alert('kirim data '+ s)
+            //this.$setState({imgtest:app.data.gambarinfo})
+            if (indexObj.cekInternet() == true) {
+              this.info.statusonoff= 'on'
+              var info_data = JSON.stringify(this.info)
+              alert(info_data)
+              // this.sendDataMeter()
+              //var date_get = indexObj.date_get();
+              //alert(str_out+'- Local: '+date_get.dd+'-'+date_get.mm+'-'+date_get.yyyy)
+            } else {
+              //simpan data ke local
+              this.info.imageURI = app.data.gambarinfo
+
+              var kirim_info = []
+              nsObj.getData("DATALOKAL", function (dat) {
+                //console.log(dat)
+                if (dat != 'undefined') {
+                  var data = JSON.parse(dat)                  
+                  self.info.statusonoff= 'off'
+                  // var info_data = JSON.stringify(self.info)
+                  // alert(info_data)
+                  data.push(self.info)
+                  var datalocal = JSON.stringify(data)
+                  //alert(datalocal)
+                  nsObj.saveData("DATALOKAL", datalocal)
+
+                } else {
+                  var data = [];
+                  self.info.statusonoff= 'off'
+                  // var info_data = JSON.stringify(self.info)
+                  // alert(info_data)                  
+                  data.push(self.info)
+                  var datalocal = JSON.stringify(data)
+                  //alert(datalocal)
+                  nsObj.saveData("DATALOKAL", datalocal)
+                }
+              })
+
+
+
+
+              app.dialog.alert("Terima Kasih, Laporan Pelanggan Berhasil di Simpan di HP anda", "PERUMDA", function () {
+                router.navigate('/home/')
+
+              })
+
+            }
+
+          } else {
+            app.dialog.alert("Maaf, Anda harus melakukan pengecekan ulang, karena sistem terlalu lama menunggu", "PERUMDA", function () {
+              router.navigate('/home/')
+
+            })
+
+          }
+        } else {
+          app.dialog.alert("Maaf, Anda harus melakukan pengecekan ulang, karena sistem terlalu lama menunggu", "PERUMDA", function () {
+            router.navigate('/home/')
+
+          })
+
+        }
+
+
+
+
+      },
+      cleanGambar: function () {
+
+        navigator.camera.cleanup(onSuccess, onFail);
+
+        function onSuccess() {
+          console.log("Camera cleanup success.")
+        }
+
+        function onFail(message) {
+          alert('Failed because: ' + message);
+        }
+      },
+      sendDataMeter: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        var indexObj = app.data.indexObj;
+        //file:
+        var imageURI = app.data.gambarinfo;
+        // imageURI = imageURI.replace("file:","")
+        var options = new FileUploadOptions();
+        options.fileKey = "file";
+        options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
+        options.mimeType = "image/jpeg";
+        var params = {};
+        var norek = this.info.norek;
+        var month_year = this.info.datecatatf1;
+        app.preloader.show();
+        // params.value1 = "test";
+        //params.value2 = "param";
+        this.info.statusonoff= 'on';
+        options.params = this.info;
+
+        options.chunkedMode = false;
+        options.headers = {
+          Connection: "close"
+        }
+        /*
+        options.headers = { Accept: 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'Cache-Control':'no-cache'
+                                    }
+         */
+
+        var uri = encodeURI(app.data.config.mainServer + "kirimdata.php")
+        var ft = new FileTransfer();
+        ft.upload(imageURI, uri,
+          function (result) {
+            console.log('sukses : ' + JSON.stringify(result));
+            app.preloader.hide();
+            //app.dialog.alert("Terima Kasih, Laporan Pelanggan Berhasil dikirim","PERUMDA", 
+            app.dialog.alert("Terima Kasih, Laporan Pelanggan Berhasil dikirim.", "PERUMDA",
+              function () {
+                router.navigate('/home/')
+              })
+
+          },
+          function (error) {
+            console.log('Error : ' + JSON.stringify(error));
+            app.preloader.hide();
+            app.dialog.alert("Maaf, laporan gagal dikirim mungkin karena koneksi. mohon diulang!", "PERUMDA", function () {
+
+            })
+          }, options);
+      },
+      sendDataMeter2: function () {
+        var app = this.$app;
+
+        var blob = this.base64ToBlob(app.data.gambarinfo, 'image/jpeg')
+
+        var formData = new FormData();
+        formData.append('file', blob);
+        formData.append('tipe', 'image');
+        var xhr = new XMLHttpRequest();
+        var uri = app.data.config.mainServer + "mediaupload.php";
+        xhr.open('POST', uri, true);
+
+
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            var percentComplete = (e.loaded / e.total) * 100;
+            //console.log(percentComplete + '% uploaded');
+            var persen = Math.floor(percentComplete);
+            // $(objlast).find(".message-text .message-date").html(waktu +' <i class="fa fa-spinner" aria-hidden="true">'+persen+'</i>')
+          }
+        };
+        xhr.onload = function () {
+          if (this.status == 200) {
+            var namafile = this.responseText
+
+            app.preloader.hide();
+
+          } else {
+            app.preloader.hide();
+          }
+        };
+        xhr.send(formData);
+
+      },
+      base64ToBlob: function (base64, mime) {
+        mime = mime || '';
+        var sliceSize = 1024;
+        var byteChars = atob(base64);
+        var byteArrays = [];
+
+        for (var offset = 0, len = byteChars.length; offset < len; offset += sliceSize) {
+          var slice = byteChars.slice(offset, offset + sliceSize);
+
+          var byteNumbers = new Array(slice.length);
+          for (var i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+
+          var byteArray = new Uint8Array(byteNumbers);
+
+          byteArrays.push(byteArray);
+        }
+
+        return new Blob(byteArrays, { type: mime });
+      }
+
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

@@ -1,0 +1,536 @@
+<template>
+  <div class="page" data-name="pd_pagecaripelanggan">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="/home/" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">MAPPING PELANGGAN</div>
+
+        <div class="right">&nbsp;
+        </div>
+
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block">
+        <div class="list">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">No. SBG/Nama </div>
+                <div class="item-input-wrap">
+                  <input type="text" id="nomorrekening" placeholder="No. SBG/Nama">
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            {{infopelanggan}}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="block text-align-center">
+        <a href="#" @click="cari" class="button button-fill color-red button-big">CARI & TAMPILKAN</a>
+      </div>
+
+      <div class="block">
+        <div class="map_canvas" id="map_canvas2" style="height:400px;width:100%"></div>
+      </div>
+
+      <div class="card data-table">
+        <div class="list">
+          <ul class="listresult">
+          </ul>
+        </div>
+        <div class="data-table-footer">
+          <div class="data-table-pagination pagination-container">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</template>
+<script>
+  export default {
+    data: function () {
+
+      return {
+        mapObj: null,
+        datapelanggan: [],
+        wilayah: [],
+        kodewilayah: 'K010114',
+        namawilayah: 'DAERAH KOTA',
+        pelanggan: [],
+        infopelanggan: '',
+        allkec: [],
+        alldesa: [],
+        alldusun: [],
+        kec: [],
+        desa: [],
+        dusun: [],
+        idkec: null,
+        iddesa: null,
+        iddusun: null,
+        nkec: '',
+        ndesa: '',
+        ndusun: '',
+        operator: ''
+      }
+    },
+
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var router = this.$f7router;
+
+        //redirect
+        //if (indexObj.cekInternet() == false) {
+          router.navigate('/home/')
+        //}
+
+        var dataString = 'username=' + username
+        this.$setState({ operator: app.data.loginfo.Name })
+        app.preloader.show()
+        this.loadMap()
+        if (app.data.current_page > 0) {
+          this.cari_nxtprev()
+        } else {
+          this.cari()
+        }
+        app.preloader.hide()
+      },
+      cari: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var self = this
+
+        //set page
+        app.data.current_page = 1
+        var row_start = (app.data.current_page - 1) * app.data.per_page
+        var row_num = app.data.per_page
+
+        var keyword = jq('#nomorrekening').val()
+        if (indexObj.cekInternet() == true) {
+          var dataString = 'Ymd=&adj=-1&adj_type=m'
+          var jcari = []
+          jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+            //alert(st+'-'+pesan)
+            if (st == "ok") {
+              jcari = JSON.parse(pesan)
+              var dataString = 'norek=' + keyword + '&operator=' + app.data.loginfo.Name + '&tahunrekening=' + jcari.yyyy + '&mtm=' + jcari.mtm + '&mm=' + jcari.mm + '&row_start=' + row_start + '&row_num=' + row_num
+              //alert(dataString)
+
+              var jcari = []
+              var htmlstr = ''
+              var pagstr = ''
+
+              var dataString_arr = dataString.split("&")
+              var yy_arr = dataString_arr[2].split("=")
+              var mm_arr = dataString_arr[4].split("=")
+              var cmp_update = 20200920
+              var inc = row_start
+              //alert(status)
+              jsonpObj.getTarget(app, 'getListPemakaian.php', dataString, function (st, pesan, pesan2) {
+
+                //alert(st+';'+pesan)
+                if (st == "ok") {
+
+                  jcari = JSON.parse(pesan)
+                  self.$setState({ datapelanggan: jcari })
+                  self.tampilkan()
+                  //pagination
+                  var prev_active = ''
+                  var next_active = ''
+                  var prev_link = 'cari_prev'
+                  var next_link = 'cari_nxt'
+                  var total_page = Math.ceil(pesan2 / app.data.per_page)
+                  var prev_page = app.data.current_page - 1
+                  var next_page = app.data.current_page + 1
+                  if (prev_page == 0) {
+                    prev_active = 'disabled'
+                    prev_link = ''
+                  }
+                  if (next_page > total_page) {
+                    next_active = 'disabled'
+                    next_link = ''
+                  }
+                  pagstr = '<span class="data-table-pagination-label">page ' + app.data.current_page + ' of ' + total_page + '</span>\
+                    <a href="#" @click="'+ prev_link + '" class="link prev_link ' + prev_active + '">\
+                      <i class="icon icon-prev color-gray"></i>\
+                    </a>\
+                    <a href="#" @click="'+ next_link + '" class="link next_link ' + next_active + '">\
+                      <i class="icon icon-next color-gray"></i>\
+                    </a>'
+                  //alert('Pagination: '+pagstr)      
+                  if (jcari.length > 0) {
+                    for (var i in jcari) {
+                      inc++
+                      var class_passive="";
+                      if (jcari[i].status == 0) {
+                        class_passive="red";
+                      }
+                      htmlstr += '<li>\
+                    <a href="/pd_pagepelanggandetil/'+ jcari[i].nomorrekening + '" class="item-link item-content">\
+                      <div class="item-media"><i class="icon icon-f7"></i></div>\
+                      <div class="item-inner">\
+                        <div class="item-title '+class_passive+'">\
+                          <div class="item-header"><strong>'+ inc + '). ' + jcari[i].nomorrekening + '</strong></div>' + jcari[i].namapelanggan + '<br>' + jcari[i].alamat + '<br>Pemakaian Terakhir ' + mm_arr[1] + '/' + yy_arr[1] + ': <strong>' + jcari[i].pencatatanmeter + '</strong> (' + jcari[i].pemakaianair + 'm3)</div>\
+                        <div class="item-after">Buka</div>\
+                      </div>\
+                    </a>\
+                  </li>'
+
+                    }
+
+
+                  }
+                }
+                //alert(htmlstr)
+                //jq('ul.listresult').html(htmlstr)
+                jq("div.pagination-container").html(pagstr)
+                jq('.prev_link').on('click', function () {
+                  app.data.current_page = app.data.current_page - 1
+                  self.cari_nxtprev()
+                })
+                jq('.next_link').on('click', function () {
+                  app.data.current_page = app.data.current_page + 1
+                  self.cari_nxtprev()
+                })
+              })
+            }
+          })
+        } else {
+          var webObj = app.data.webObj
+          var sql = "SELECT tp.nomorrekening,tp.namapelanggan FROM tblpelanggan tp JOIN tblopp topp ON topp.nomorrekening = tp.nomorrekening JOIN tbljenispelanggan tjp ON tjp.id = tp.idgol WHERE (tp.nomorrekening = '" + keyword + "' OR tp.namapelanggan LIKE '%" + keyword + "%')  AND topp.operator ='" + app.data.loginfo.Name + "' ORDER BY tp.idurut ASC"
+          //alert('bestt '+sql)
+          webObj.selectQuery2(app.data.OPENDB, sql, function (st, data) {
+            if (st == "ok") {
+
+              var jcari = []
+              var htmlstr = ''
+              jcari = data
+              self.$setState({ datapelanggan: jcari })
+              self.tampilkan()
+              //var jcarlength = jcari.length
+              //alert(jcarlength+';'+jcari)
+              if (jcari.length > 0) {
+                for (var i in jcari) {
+                  //alert('bestt '+i)
+                  htmlstr += '<li>\
+                  <a href="/pd_pagepelanggandetil/'+ jcari[i].nomorrekening + '" class="item-link item-content">\
+                    <div class="item-media"><i class="icon icon-f7"></i></div>\
+                    <div class="item-inner">\
+                      <div class="item-title">\
+                        <div class="item-header">'+ jcari[i].nomorrekening + '</div>' + jcari[i].namapelanggan + '</div>\
+                      <div class="item-after">Buka</div>\
+                    </div>\
+                  </a>\
+                </li>'
+
+                }
+
+                //alert(htmlstr)
+                //jq('ul.listresult').html(htmlstr)
+              }
+            }
+          })
+        }
+      },
+      cari_nxtprev: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var self = this
+
+        //set page
+        var row_start = (app.data.current_page - 1) * app.data.per_page
+        var row_num = app.data.per_page
+
+        var keyword = jq('#nomorrekening').val()
+        if (indexObj.cekInternet() == true) {
+          var dataString = 'Ymd=&adj=-1&adj_type=m'
+          var jcari = []
+          jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+            if (st == "ok") {
+              jcari = JSON.parse(pesan)
+              var dataString = 'norek=' + keyword + '&operator=' + app.data.loginfo.Name + '&tahunrekening=' + jcari.yyyy + '&mtm=' + jcari.mtm + '&mm=' + jcari.mm + '&row_start=' + row_start + '&row_num=' + row_num
+              //alert(dataString)
+
+              var jcari = []
+              var htmlstr = ''
+              var pagstr = ''
+
+              var dataString_arr = dataString.split("&")
+              var yy_arr = dataString_arr[2].split("=")
+              var mm_arr = dataString_arr[4].split("=")
+              var cmp_update = 20200920
+              var inc = row_start
+              //alert(status)
+              jsonpObj.getTarget(app, 'getListPemakaian.php', dataString, function (st, pesan, pesan2) {
+
+                //alert(st+';'+pesan)
+                if (st == "ok") {
+
+                  jcari = JSON.parse(pesan)
+                  self.$setState({ datapelanggan: jcari })
+                  self.tampilkan()
+                  //pagination
+                  var prev_active = ''
+                  var next_active = ''
+                  var prev_link = 'cari_prev'
+                  var next_link = 'cari_nxt'
+                  var total_page = Math.ceil(pesan2 / app.data.per_page)
+                  var prev_page = app.data.current_page - 1
+                  var next_page = app.data.current_page + 1
+                  if (prev_page == 0) {
+                    prev_active = 'disabled'
+                    prev_link = ''
+                  }
+                  if (next_page > total_page) {
+                    next_active = 'disabled'
+                    next_link = ''
+                  }
+                  pagstr = '<span class="data-table-pagination-label">page ' + app.data.current_page + ' of ' + total_page + '</span>\
+                    <a href="#" @click="'+ prev_link + '" class="link prev_link ' + prev_active + '">\
+                      <i class="icon icon-prev color-gray"></i>\
+                    </a>\
+                    <a href="#" @click="'+ next_link + '" class="link next_link ' + next_active + '">\
+                      <i class="icon icon-next color-gray"></i>\
+                    </a>'
+                  //alert('Pagination: '+pagstr)      
+                  if (jcari.length > 0) {
+                    for (var i in jcari) {
+                      inc++
+                      var class_passive="";
+                      if (jcari[i].status == 0) {
+                        class_passive="red";
+                      }
+                      htmlstr += '<li>\
+                    <a href="/pd_pagepelanggandetil/'+ jcari[i].nomorrekening + '" class="item-link item-content">\
+                      <div class="item-media"><i class="icon icon-f7"></i></div>\
+                      <div class="item-inner">\
+                        <div class="item-title '+class_passive+'">\
+                          <div class="item-header"><strong>'+ inc + '). ' + jcari[i].nomorrekening + '</strong></div>' + jcari[i].namapelanggan + '<br>' + jcari[i].alamat + '<br>Pemakaian Terakhir ' + mm_arr[1] + '/' + yy_arr[1] + ': <strong>' + jcari[i].pencatatanmeter + '</strong> (' + jcari[i].pemakaianair + 'm3)</div>\
+                        <div class="item-after">Buka</div>\
+                      </div>\
+                    </a>\
+                  </li>'
+
+                    }
+
+
+                  }
+                }
+                //alert(htmlstr)
+                //jq('ul.listresult').html(htmlstr)
+                jq("div.pagination-container").html(pagstr)
+                jq('.prev_link').on('click', function () {
+                  app.data.current_page = app.data.current_page - 1
+                  self.cari_nxtprev()
+                })
+                jq('.next_link').on('click', function () {
+                  app.data.current_page = app.data.current_page + 1
+                  self.cari_nxtprev()
+                })
+              })
+            }
+          })
+        } else {
+          var webObj = app.data.webObj
+          var sql = "SELECT tp.nomorrekening,tp.namapelanggan FROM tblpelanggan tp JOIN tblopp topp ON topp.nomorrekening = tp.nomorrekening JOIN tbljenispelanggan tjp ON tjp.id = tp.idgol WHERE (tp.nomorrekening = '" + keyword + "' OR tp.namapelanggan LIKE '%" + keyword + "%')  AND topp.operator ='" + app.data.loginfo.Name + "' ORDER BY tp.idurut ASC"
+          //alert('bestt '+sql)
+          webObj.selectQuery2(app.data.OPENDB, sql, function (st, data) {
+            if (st == "ok") {
+
+              var jcari = []
+              var htmlstr = ''
+              jcari = data
+              self.$setState({ datapelanggan: jcari })
+              self.tampilkan()
+              //var jcarlength = jcari.length
+              //alert(jcarlength+';'+jcari)
+              if (jcari.length > 0) {
+                for (var i in jcari) {
+                  //alert('bestt '+i)
+                  htmlstr += '<li>\
+                  <a href="/pd_pagepelanggandetil/'+ jcari[i].nomorrekening + '" class="item-link item-content">\
+                    <div class="item-media"><i class="icon icon-f7"></i></div>\
+                    <div class="item-inner">\
+                      <div class="item-title">\
+                        <div class="item-header">'+ jcari[i].nomorrekening + '</div>' + jcari[i].namapelanggan + '</div>\
+                      <div class="item-after">Buka</div>\
+                    </div>\
+                  </a>\
+                </li>'
+
+                }
+
+                //alert(htmlstr)
+                //jq('ul.listresult').html(htmlstr)
+              }
+            }
+          })
+        }
+      },
+      tampilkan: function () {
+        var app = this.$app
+        var self = this
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var datapelanggan = this.datapelanggan;
+        if (datapelanggan.length > 0) {
+          var info = "Terdapat " + datapelanggan.length + "  Pelanggan."
+          this.$setState({ infopelanggan: info })
+          this.$setState({ pelanggan: datapelanggan })
+          try {
+            if (this.mapObj != null) {
+              //alert('map clear')
+              this.mapObj.clear()
+              //this.mapObj.remove()
+            }
+            //alert('map reset')
+            this.resetMap()
+          } catch (err) { }
+        } else {
+          app.dialog.alert("Gagal melakukan mapping!")
+        }
+
+      },
+      loadMap: function () {
+
+        var map;
+
+        var div = document.getElementById("map_canvas2");
+        map = plugin.google.maps.Map.getMap(div);
+        this.$setState({ mapObj: map })
+
+        var self = this
+        var dataMarker = []
+        var bounds = [];
+        // var pdata=this.pelanggan
+        var tabanan_lat = -8.5383896
+        var tabanan_lng = 115.084527
+
+        map.one(plugin.google.maps.event.MAP_READY, function () {
+
+          map.moveCamera({
+            target: { lat: tabanan_lat, lng: tabanan_lng },
+            zoom: 10,
+            tilt: 0,
+            bearing: 0,
+            duration: 1000
+          }, function () {
+          });
+
+        })
+      },
+      resetMap: function () {
+        var app = this.$app
+        var pdata = []
+        pdata = this.pelanggan
+        //app.dialog.alert("Map... "+pdata[0].lat)
+        var map = this.mapObj
+        var data = []
+        if (pdata.length > 0) {
+          for (var i in pdata) {
+            if (pdata[i].lat != null || pdata[i].lat != "") {
+              var marker = {
+                position: { lat: pdata[i].lat, lng: pdata[i].lng },
+                title: pdata[i].namapelanggan,
+                'icon': {
+                  'url': 'static/icons/wmmeter.png'
+                },
+                snippet: pdata[i].namapelanggan + " (" + pdata[i].nomorrekening + ")",
+              }
+              data.push(marker)
+            }
+          }
+        }
+        var bounds = []
+        var markers = data.map(function (options) {
+          bounds.push(options.position);
+          return map.addMarker(options);
+        })
+        //app.dialog.alert("Length... "+pdata.length)
+
+        map.moveCamera({
+          target: bounds,
+          zoom: 18,
+          tilt: 0,
+          bearing: 0,
+          duration: 1000
+        }, function () {
+
+          app.preloader.hide()
+
+        });
+      },
+      loadJalur: function () {
+        var app = this.$app;
+        var jsonpObj = app.data.jsonpObj
+        var self = this
+        var info = this.trinfo
+        var dataString = 'start=' + info.asal + '&end=' + info.tujuan
+        var polyline = app.data.Polyline
+        jsonpObj.getTarget2(app, 'getPolyline.php', dataString, function (data) {
+
+          //alert(data.status+','+data.titik)
+          app.preloader.hide();
+          if (data.status == "ok") {
+            // var info = JSON.parse()
+            //redrawn marker                            
+            var plot = polyline.decode(data.titik)
+            var JALUR = [];
+            for (var i in plot) {
+              JALUR.push({ lat: plot[i][0], lng: plot[i][1] });
+            }
+
+            //alert(JALUR[0].lat+','+JALUR[0].lng)
+            self.$setState({ pathKurir: JALUR })
+
+            var pathobj = self.mapObj.addPolyline({
+              'points': JALUR,
+              'color': '#c61ddf',
+              'width': 5,
+              'geodesic': false
+            });
+
+            //self.demoAnimKurir()
+          } else {
+            app.preloader.hide();
+          }
+
+
+        })
+
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

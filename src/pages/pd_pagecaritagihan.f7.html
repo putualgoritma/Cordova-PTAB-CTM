@@ -1,0 +1,129 @@
+<template>
+    <div class="page" data-name="pd_bacameter">
+      <div class="navbar">
+        <div class="navbar-bg"></div>
+        <div class="navbar-inner sliding">
+          <div class="left">
+            <a href="/home/" class="link">
+              <i class="icon icon-back"></i>
+              <span class="if-not-md">BACK</span>
+            </a>
+          </div>
+          <div class="title">PENCATATAN METER</div>
+         
+        </div>
+      </div>
+      <div class="page-content">
+
+        <div class="list">
+            <ul>
+              <li class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">No. SBG/Nama </div>
+                  <div class="item-input-wrap">
+                    <input type="text" id="nomorrekening" placeholder="No. SBG/Nama">
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+        <div class="block text-align-center">         
+            <a href="#" @click="cari" class="button button-fill color-red button-big">CARI</a>
+        </div>
+
+        <div class="list">
+            <ul class="listtagihan">
+              
+            </ul>
+          </div>
+      </div>
+
+    </div>
+    </template>
+
+    <style scoped>
+        .button{
+          height: 40px;
+          font-size: 17px;
+          padding-top: 8px;
+        }
+       select
+       {
+           height: 40px;
+           font-size: 17px;
+       }
+
+       input{
+           height: 40px;
+           width: 100%;
+           border: 1px solid black;
+           font-size: 20px;
+           text-align: center;
+       }
+
+     </style> 
+    <script>
+    export default {
+        data:function(){
+
+            return{
+            waktu:'--',
+            info:{},
+            operator:'',
+            tipebaca:[],
+            arrstatus:[],
+            tipestatus:'manual',
+            namastatus:'terbaca'
+            }
+            },
+      methods : {
+        init : function(page)
+        {
+            var app= this.$app;            
+            var indexObj = app.data.indexObj;
+            var jsonpObj = app.data.jsonpObj;           
+            var username = app.data.user.username;
+            var jq = app.data.JQ;
+            var dataString = 'username='+username
+            var hari=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']
+            var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+            var thari = waktu.split(',')
+            var nhari = parseInt(thari[0])
+            var namahari = hari[nhari]
+            var waktu = namahari +', '+thari[1];
+
+            this.$setState({waktu:waktu})
+            this.$setState({operator:app.data.loginfo.Name})
+        },
+        cari : function()
+        {
+            var app= this.$app;
+            var jq = app.data.JQ;
+            var indexObj = app.data.indexObj;
+            
+            var keyword = jq('#nomorrekening').val()
+            var dataString = 'norek='+keyword+'&operator='+app.data.loginfo.Name
+            //alert(dataString)
+            indexObj.listTagihan(app,dataString)
+        },
+        batal:function()
+        {
+          var app= this.$app;  
+             var router = this.$f7router;            
+             app.data.pinfo={}
+             app.data.wminfo={}
+             app.data.gambarinfo={}
+             router.navigate('/home/')
+        }
+
+     },
+     on : {
+      pageInit: function(e, page) 
+              {      
+              this.init(page)
+              }
+          }
+
+    };
+    </script>

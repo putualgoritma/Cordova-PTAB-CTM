@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!--
+  Customize this policy to fit your own app's needs. For more guidance, see:
+      https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+  Some notes:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+      * Enable inline JS: add 'unsafe-inline' to default-src
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+
+  <meta name="theme-color" content="#ff5500">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <title>Best</title>
+  
+  
+  
+  
+  <!-- built styles file will be auto injected -->
+</head>
+<body>
+  <div id="app" class="theme-light">
+    <!-- Left panel with cover effect-->
+    <div class="panel panel-left panel-cover panel-init">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="title">Menu</div>
+            </div>
+          </div>
+          <div class="page-content bg-color-white">
+            <div class="list text-color-black bg-color-white">
+              <ul class="bg-color-white">
+                <li class="item-divider">Utama</li>
+                <li>
+                  <a href="/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Beranda {{$root.user.username}}</div>
+                    </div>
+                  </a>
+                </li>
+                <% if (2 == 2) { %>
+                <li>
+                  <a href="/pendaftaran/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Pendaftaran{{$root.user.username}}</div>
+                    </div>
+                  </a>
+                </li>
+                <% } %>
+   <!--
+                <li>
+                  <a href="/upgrade/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Upgrade</div>
+                    </div>
+                  </a>
+                </li>
+              -->
+      <!--
+                <li class="item-divider">Group Mitra</li>
+                <li>
+                  <a href="/mitra/sp/referensi" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Mitra Langsung</div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a href="/mitra/sp/jenjang" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Mitra Jenjang</div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a href="/daftar_mitra/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Diagram Mitra</div>
+                    </div>
+                  </a>
+                </li>
+
+              -->
+                <li class="item-divider">Rekening Saya</li>
+                <li>
+                  <a href="/riwayat/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Riwayat</div>
+                    </div>
+                  </a>
+                </li>
+           <!--
+                <li>
+                  <a href="/beli_poin/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Beli Poin</div>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="/transfer_poin/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Transfer Poin</div>
+                    </div>
+                  </a>
+                </li>
+              -->
+                <li>
+                  <a href="/konversi_poin/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Withdraw Saldo</div>
+                    </div>
+                  </a>
+                </li>
+               
+        <!--
+
+                <li class="item-divider">Mapping</li>
+                <li>
+                  <a href="/lokasi/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Lokasi</div>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="/mapping/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Map Agen</div>
+                    </div>
+                  </a>
+                </li>
+                <li class="item-divider">Laporan Prestasi</li> 
+                <li>
+                  <a href="/pp_mitra/ref/referensi" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Perorangan</div>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="/pp_mitra/ref/jenjang" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Group Mitra</div>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="/deviden/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Deviden</div>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="/weblog/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Tiro Weblog</div>
+                    </div>
+                  </a>
+                </li>
+              -->
+
+                <li>
+                  <a href="/logout/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Logout</div>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a href="/keluar/" class="item-link item-content panel-close">
+                    <div class="item-inner">
+                      <div class="item-title">Keluar</div>
+                    </div>
+                  </a>
+                </li>
+
+
+              </ul>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+   
+    
+    <!-- Your main view, should have "view-main" class -->
+    <div class="view view-main view-init safe-areas" data-url="/"></div>
+
+
+    <!-- Popup -->
+    <div class="popup" id="my-popup">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="title">Popup</div>
+              <div class="right">
+                <a href="#" class="link popup-close">Close</a>
+              </div>
+            </div>
+          </div>
+          <div class="page-content">
+            <div class="block">
+              <p>Popup content goes here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="my-login-screen">
+      <div class="view">
+        <div class="page">
+          <div class="page-content login-screen-content">
+            <div class="text-align-center"><img src='./static/images/logo.png'/></div>
+            <div class="login-screen-title">Login</div>
+            <div class="list">
+              <ul>
+                <li class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Nama Pengguna</div>
+                    <div class="item-input-wrap">
+                      <input type="text" #="uname" placeholder="Nama Pengguna">
+                    </div>
+                  </div>
+                </li>
+                <li class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Kata Sandi</div>
+                    <div class="item-input-wrap">
+                      <input type="password" #="upass" placeholder="Kata Sandi">
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="list">
+              <ul>
+                <li>
+                  <a href="#" class="item-link list-button login-button">Sign In</a>
+                </li>
+              </ul>
+              <div class="block-footer">Isi Informasi tentang akun anda.<br>Kemudian tekan Tombol 'Sign In ' sekali</div>
+             
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% if (process.env.TARGET === 'cordova') { %>
+  <script src="cordova.js"></script>
+  <% } %>
+  <!-- built script files will be auto injected -->
+</body>
+</html>

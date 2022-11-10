@@ -1,0 +1,288 @@
+<template>
+  <div class="page" data-name="pd_pagepelanggan">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" @click="back" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">INFO TAGIHAN SEMENTARA</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="block">
+        <div class="text-align-center">{{waktu}}</div>
+        <div class="text-align-center">
+          <h3>PERUMDA TIRTA AMERTHA BUANA TABANAN</h3>
+        </div>
+      </div>
+
+      <div class="block">
+        <h2>Data Pelanggan</h2>
+      </div>
+      <div class="block">
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. SBG</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.norek}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Nama </div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.namapelanggan}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Alamat</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.alamat}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Golongan</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.idgol}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No Telp</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.telp}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Tgl Pasang</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.tgltersambung}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. WM</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmnomor}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Diameter WM</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmukuran}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Rek. Bulan</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.my_rekening}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Stand Meter</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.stand_rekening}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Tagihan</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.tagihan_rekening}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">WM. Status</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.id}} ({{info.NamaStatus}})</div>
+        </div>
+
+        <div class="row">
+          <div class="col-100">
+            <img src="{{imageSrc}}" style="width: 100%;" id="myImage">
+          </div>
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+  </div>
+</template>
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  .row {
+    height: 40px;
+  }
+
+  .row .label {
+    font-size: 17px;
+    font-weight: bold;
+    padding: 5px;
+
+  }
+</style>
+<script>
+  export default {
+
+    data: function () {
+
+      return {
+        pid: '',
+        waktu: '--',
+        info: {},
+        operator: '',
+        month_year: '-',
+        bulanrekening: '',
+        tahunrekening: '',
+        date_get: {},
+        imageSrc: './static/images/wmmeter.png',
+      }
+    },
+
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var self = this
+        var dataString = 'username=' + username
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+        var thari = waktu.split(',')
+        var nhari = parseInt(thari[0])
+        var namahari = hari[nhari]
+        //var date_get = indexObj.date_get()
+        var jcari = []
+        var date_get = indexObj.date_get();
+        this.$setState({ date_get: date_get })
+        var dataString = 'Ymd=&adj=0&adj_type=m'
+        jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+          if (st == "ok") {
+            jcari = JSON.parse(pesan)
+            var month_year = jcari.yyyy + '-' + jcari.mm
+            jq('input[name=month_year]').val(month_year)
+            self.$setState({ date_get: jcari })
+          }
+        })
+        var waktu = namahari + ', ' + thari[1];
+        var pid_params = page.route.params.pid
+        var pid_arr = pid_params.split(":")
+        var pid = pid_arr[0]
+        var bulanrekening = pid_arr[1]
+        var tahunrekening = pid_arr[2]
+        //alert('blnthn'+bulanrekening+'-'+tahunrekening)
+        app.data.userinfo.norek = pid
+        this.$setState({ pid: pid })
+        var Ymd = tahunrekening + '-' + bulanrekening + '-01'
+        var dataString = 'Ymd=' + Ymd + '&adj=1&adj_type=m'
+        //alert(dataString)
+        jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+          if (st == "ok") {
+            jcari = JSON.parse(pesan)
+            self.$setState({ bulanrekening: jcari.mtm })
+            self.$setState({ tahunrekening: jcari.yyyy })
+            self.loadInfo()
+          }
+        })
+        this.$setState({ waktu: waktu })//app.data.userinfo
+        this.$setState({ operator: app.data.loginfo.Name })
+      },
+      back: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        router.back()
+      },
+      cari: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var indexObj = app.data.indexObj;
+
+        var keyword = jq('#nomorrekening').val()
+        var dataString = 'norek=' + keyword + '&operator=' + app.data.loginfo.Name
+        //alert(dataString)
+        indexObj.showTagihan(app, dataString)
+      },
+      loadInfo: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        //var norek = app.data.userinfo.norek
+        var norek = this.pid
+        var bulanrekening = this.bulanrekening
+        var tahunrekening = this.tahunrekening
+        var self = this
+        //alert('Test-'+dataString)
+        var dataString1 = 'norek=' + norek + '&bulanrekening=' + bulanrekening + '&tahunrekening=' + tahunrekening
+        // alert(dataString1)
+        jsonpObj.getTarget(app, 'getInfoTagihan.php', dataString1, function (st, pesan) {
+          // alert('Test767-' + st + pesan)
+          // var datatest = JSON.parse(pesan)
+          // alert(datatest)
+          if (st == "ok") {
+            var data = JSON.parse(pesan)
+            var filegambar = data.filegambar
+            var imageSrc = app.data.config.imageServer + filegambar
+            // alert(imageSrc)
+            self.$setState({ imageSrc: imageSrc })
+            ////nomorrekening,namapelanggan,alamat,jenispelanggan,telp,tgltersambung,wmnomor,wmukuran
+            var kontak = data.telp
+            // alert(data.telp)
+            if (data.telp == "" || data.telp.length < 5) {
+              kontak = data.nomorhp
+            }
+            //var date_get = indexObj.date_get();
+            var dataString = 'nomorrekening=' + norek + '&month=' + self.date_get.mm + '&year=' + self.date_get.yyyy
+            // alert(dataString)
+            jsonpObj.getTarget(app, 'getpemakaianlalu.php', dataString, function (st, dat, avg) {
+              // alert('Test777-' + st + avg)
+              // var datatest2 = JSON.parse(dat)
+              // alert(datatest2)
+              if (st == "ok") {
+                var dat = JSON.parse(dat)
+                var meteran_avg = avg
+                var my_rekening = bulanrekening + '/' + tahunrekening
+                var tot_pemakaian = data.bulanini - data.bulanlalu
+                var wajibdibayar = parseFloat(data.wajibdibayar)
+                wajibdibayar = wajibdibayar.toLocaleString()
+                var stand_rekening = '(' + data.bulanini + '-' + data.bulanlalu + ') ' + tot_pemakaian + ' m3'
+                var tagihan_rekening = 'Rp. ' + wajibdibayar
+                //app.dialog.alert('Test-'+dat.pencatatanmeter)
+                var getinfo = { my_rekening: my_rekening, stand_rekening: stand_rekening, tagihan_rekening: tagihan_rekening, norek: data.nomorrekening, namapelanggan: data.namapelanggan, alamat: data.alamat, jenispelanggan: data.jenispelanggan, telp: kontak, tgltersambung: data.tgltersambung, wmnomor: data.wmnomor, id: data.id, NamaStatus: data.NamaStatus, wmukuran: data.wmukuran, pencatatanmeterprev: dat.pencatatanmeter, pemakaianairprev: dat.pemakaianair, idgol: data.idgol, lat: data.lat, lng: data.lng, pemakaian_avg: meteran_avg }
+                data.pencatatanmeterprev = dat.pencatatanmeter
+                data.pemakaianairprev = dat.pemakaianair
+                data.statussmprev = dat.statussm
+                data.pemakaian_avg = meteran_avg
+                app.data.pinfo = data;
+                self.$setState({ info: getinfo })
+              }
+            })
+          }
+        })
+      },
+
+      batal: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        app.data.pinfo = {}
+        app.data.wminfo = {}
+        app.data.gambarinfo = {}
+        router.navigate('/home/')
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

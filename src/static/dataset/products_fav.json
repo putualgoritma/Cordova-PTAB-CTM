@@ -1,0 +1,123 @@
+[
+	{
+		"id":"1",
+		"name": "Nutella - Hazelnut Spread",
+		"image": "https://www.dropbox.com/s/vbhftd8khm9yu6x/nutella.png?raw=1",
+		"pack": "250g",
+		"type": "veg",
+		"price": {
+			"original": "Rp 350.000",
+			"final": "Rp 350.000"
+		},
+		"desc":"Long Description",
+		"album":[{
+			"src" : "https://www.dropbox.com/s/5t6xrzwx72zppnb/iphone-7-plus-black.png?raw=1",
+			"alt": "iphone 7 black" 	
+		},
+		{ 
+		 "src" : "https://www.dropbox.com/s/1jnxwokdz2jiw4k/iphone-7-plus-gold.png?raw=1",
+		 "alt": "iphone gold" 
+		}],
+		"rating":"5"
+	},
+	{
+		"id":"2",
+		"name": "Ferrero Rocher",
+		"image": "https://www.dropbox.com/s/z794i3pyr5i708n/ferrero-rocher.png?raw=1",
+		"pack": "30g",
+		"type": "veg",
+		"price": {
+			"original": "Rp 100.000",
+			"final": "Rp 100.000"
+		},
+		"desc":"Long Description",
+		"album":[
+			{ 
+			 "src" : "https://www.dropbox.com/s/1jnxwokdz2jiw4k/iphone-7-plus-gold.png?raw=1",
+			 "alt": "iphone gold" 
+			},
+			{ 
+			 "src" : "https://www.dropbox.com/s/ro5iwcmp8v9dosa/iphone-7-plus-jet-black.png?raw=1",
+			 "alt": "iphone jet" 
+			}],
+		"rating":"5"
+	},
+	{
+		"id":"3",
+		"name": "Eggs",
+		"image": "https://www.dropbox.com/s/65ie57dqned6ny0/eggs.png?raw=1",
+		"pack": "1Dz",
+		"type": "nonveg",
+		"price": {
+			"original": "Rp 120.000",
+			"final": "Rp 100.000"
+		},
+		"desc":"Long Description",
+		"album":[
+			{ 
+			 "src" : "https://www.dropbox.com/s/ro5iwcmp8v9dosa/iphone-7-plus-jet-black.png?raw=1",
+			 "alt": "iphone jet" 
+			},
+			{ 
+			 "src" : "https://www.dropbox.com/s/jd9zwl1cim3yrzc/iphone-7-plus-rose-gold.png?raw=1",
+			 "alt": "iphone rose" 
+			}],
+		"rating":"5"
+	},
+	{
+		"id":"4",
+		"name": "M&M Candy",
+		"image": "https://www.dropbox.com/s/o184mmdl9h6ll2e/mm-candy.png?raw=1",
+		"pack": "47.9g",
+		"type": "veg",
+		"price": {
+			"original": "Rp 25.000",
+			"final": "Rp 25.000"
+		},
+		"desc":"Long Description",
+		"album":[],
+		"rating":"5"
+	},
+	{
+		"id":"5",
+		"name": "M&M Candy2",
+		"image": "https://cdn.framework7.io/placeholder/people-1000x600-6.jpg",
+		"pack": "47.9g",
+		"type": "veg",
+		"price": {
+			"original": "Rp 25.000",
+			"final": "Rp 25.000"
+		},
+		"desc":"Long Description",
+		"album":[],
+		"rating":"5"
+	},
+	{
+		"id":"6",
+		"name": "M&M Candy3",
+		"image": "https://cdn.framework7.io/placeholder/people-1000x600-6.jpg",
+		"pack": "47.9g",
+		"type": "veg",
+		"price": {
+			"original": "Rp 25.000",
+			"final": "Rp 25.000"
+		},
+		"desc":"Long Description",
+		"album":[],
+		"rating":"5"
+	},
+	{
+		"id":"7",
+		"name": "M&M Candy4",
+		"image": "https://cdn.framework7.io/placeholder/people-1000x600-6.jpg",
+		"pack": "47.9g",
+		"type": "veg",
+		"price": {
+			"original": "Rp 25.000",
+			"final": "Rp 25.000"
+		},
+		"desc":"Long Description",
+		"album":[],
+		"rating":"5"
+	}
+]

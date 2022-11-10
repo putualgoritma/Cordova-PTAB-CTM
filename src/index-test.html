@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!--
+  Customize this policy to fit your own app's needs. For more guidance, see:
+      https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+  Some notes:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+      * Enable inline JS: add 'unsafe-inline' to default-src
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+
+  <meta name="theme-color" content="#ff5500">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <title>Best</title>
+  <link rel="stylesheet" href="../node_modules/framework7/css/framework7.bundle.css">
+  <link rel="stylesheet" href="css/app.less">
+  
+  
+  
+  
+  <!-- built styles file will be auto injected -->
+</head>
+<body>
+
+  <div class="page">
+    <div class="page-content" >
+      <br> <br> <br>
+       <div class="block-inner" style="padding-top:50">
+       <div class="text-align-center"><img src='./static/images/logo.png'/></div>
+       <div class="login-screen-title">Login</div>
+       <div class="list">
+         <ul>
+           <li class="item-content item-input">
+             <div class="item-inner">
+               <div class="item-title item-label">Nama Pengguna</div>
+               <div class="item-input-wrap">
+                 <input type="text" id="username" placeholder="Nama Pengguna">
+               </div>
+             </div>
+           </li>
+           <li class="item-content item-input">
+             <div class="item-inner">
+               <div class="item-title item-label">Kata Sandi</div>
+               <div class="item-input-wrap">
+                 <input type="password" id="password" placeholder="Kata Sandi">
+               </div>
+             </div>
+           </li>
+         </ul>
+       </div>
+       <div class="block text-align-center">
+        
+          <a href="#" @click="login" class="button button-fill color-purple">Sign In</a>
+          
+         <div class="block-footer text-align-center">Isi Informasi tentang akun anda.<br>Kemudian tekan Tombol 'Sign In ' sekali</div>
+         <div class="block-footer text-align-center"><strong> Anda belum terdaftar?</strong></div>
+        
+         <a href="/signup/" class="button button-fill color-purplefade">Daftar</a>
+          
+         
+       </div>
+
+       </div>
+     </div>
+</div>
+</body>
+</html>

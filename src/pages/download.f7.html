@@ -1,0 +1,424 @@
+<template>
+  <div class="page" data-name="download">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="/home/" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">PERUMDA-UNDUH</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+      <p><span data-progress="{{progress}}" class="progressbar" id="demo-inline-progressbar"></span></p>
+      <P>Mohon Luangkan Waktu untuk melakukan Proses Download dan install. Diperlukan Koneksi Internet yang stabil.</P>
+      <div class="row">
+        <div class="col-20 text-align-center"></div>
+        <div class="col-60 text-align-center">
+          <a href="#" @click="initUpdate" class="button button-fill color-red">DOWNLOAD DATA</a>
+        </div>
+        <div class="col-20 text-align-center"></div>
+      </div>
+
+      <div class="row">
+        <div class="col-100 text-align-center">
+          <p>{{progress_nominal}} , {{st_insert}}</p>
+          <p>{{info}}</p>
+        </div>
+      </div>
+
+      {{#each datafiles}}
+      <div class="row">
+        <div class="col-10 text-align-center"></div>
+        <div class="col-80 text-align-center">
+          <a href="#" @click="bacaFile('{{this.nama}}')" class="button button-fill color-blue">{{this.label}} ->
+            Pasang</a> Table {{this.label}}
+          {{#js_if "this.statusdb == 'true'"}}
+          OK
+          {{else}}
+          NO
+          {{/js_if}}
+          - {{this.jumlah}}<br><i style="font-size: smaller;">{{this.tanggal}}</i>
+        </div>
+        <div class="col-10 text-align-center"></div>
+      </div>
+      <br>
+      {{/each}}
+
+    </div>
+
+  </div>
+</template>
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  .row {
+    height: 40px;
+  }
+
+  .row .label {
+    font-size: 17px;
+    font-weight: bold;
+    padding: 5px;
+
+  }
+</style>
+<script>
+  export default {
+
+    data: function () {
+
+      return {
+        waktu: '--',
+        info: '',
+        operator: '',
+        fileLink: [],
+        fileLabel: ['Data Status Meter', 'Data Operator', 'Data Jenis Layanan', 'Data link Operator', 'Data Pemakaian Air', 'Data Pelanggan', 'Data Kecamatan', 'Data Desa', 'Data Dusun', 'Map Pelanggan', 'Status SM Pelanggan'],
+        fileName: ['tblstatuswm', 'pbk', 'tbljenispelanggan', 'tblopp', 'tblpemakaianair', 'tblpelanggan', 'nonair_m_kec', 'nonair_m_desa', 'nonair_m_dusun', 'map_koordinatpelanggan', 'tblstatussmpelanggan'],
+        tblColums: {
+          "nonair_m_dusun": ["iddusun", "namadusun", "idkec", "iddesa"], "nonair_m_desa": ["iddesa", "namadesa", "idkec"], "nonair_m_kec": ["idkec", "kec"], "map_koordinatpelanggan": ["idkoordinat", "nomorrekening", "qrcode", "rumah_foto", "wm_foto", "lat", "lng", "n_jarak", "n_foto", "n_keterangan", "ne_jarak", "ne_foto", "ne_keterangan", "e_jarak", "e_foto", "e_keterangan", "se_jarak", "se_foto", "se_keterangan", "s_jarak", "s_foto", "s_keterangan", "sw_jarak", "sw_foto", "sw_keterangan", "w_jarak", "w_foto", "w_keterangan", "nw_jarak", "nw_foto", "nw_keterangan", "accuracy", "datetime"], "tblstatuswm": ["id", "NamaStatus", "smsstatus"],
+          "tblpelanggan": ["nomorrekening", "namapelanggan", "alamat", "dusun", "desa", "kecamatan", "idgol", "idareal", "tglterdaftar", "tgltersambung", "sbg", "status", "idurut", "idurutcode", "tipe", "idbiro", "idstatusdenda", "nomorhp", "nomorsurat", "tmplahir", "tgllahir", "alamat_detail", "alamat_ktp", "telp", "pekerjaan", "flagpendaftaran", "tglentry", "tglrab", "norab", "tglpanggil", "biayainstalasi", "cicilan", "flaginstalasi", "tglbap", "nobap", "tglberlakubap", "wmnomor", "wmmerek", "wmukuran", "wmstandmeter", "wmpetugas", "totalbayar", "status_posting", "flag_bayar", "sono", "sms", "rupiah_meter", "last_opp", "last_update", "file_wm", "file_denah"],
+          "tblpemakaianair": ["nomorrekening", "tahunrekening", "pencatatanmeter1", "pemakaianair1", "pencatatanmeter2", "pemakaianair2", "pencatatanmeter3", "pemakaianair3", "pencatatanmeter4", "pemakaianair4", "pencatatanmeter5", "pemakaianair5", "pencatatanmeter6", "pemakaianair6", "pencatatanmeter7", "pemakaianair7", "pencatatanmeter8", "pemakaianair8", "pencatatanmeter9", "pemakaianair9", "pencatatanmeter10", "pemakaianair10", "pencatatanmeter11", "pemakaianair11", "pencatatanmeter12", "pemakaianair12", "tglupdate", "operator"],
+          "tbljenispelanggan": ["id", "jenispelanggan", "deskripsi", "beban", "tarif01", "tarif02", "tarif03", "tarif04", "tarif05", "tarif06", "danameter", "danaadministrasi", "batastarif1", "batastarif2", "batastarif3", "batastarif4", "batastarif5", "batastarif6", "jaminanpelanggan"],
+          "tblopp": ["nomorrekening", "operator", "status", "tanggalmulai"],
+          "pbk": ["GroupID", "Name", "Number", "Password"],
+          "tblstatussmpelanggan": ["nomorrekening", "bulan", "tahun", "statussm", "operator"]
+        },
+        step: 0,
+        batas: 10,
+        status: 'pending',
+        progress: 1,
+        progress_nominal: '',
+        st_insert: '',
+        datafiles: [],
+        fileEntry: null,
+        st_tblstatuswm: false,
+        st_pbk: false,
+        st_tbljenispelanggan: false,
+        st_tbltblopp: false,
+        st_tblpemakaianair: false,
+        st_tblpelanggan: false,
+        st_map_koordinatpelanggan: false,
+        st_nonair_m_kec: false,
+        st_nonair_m_desa: false,
+        st_nonair_m_dusun: true,
+        st_tblstatussmpelanggan: false,
+      }
+    },
+
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        //console.log('init')
+        var operator = app.data.loginfo.Name
+        var offdataServer = app.data.config.offdataServer;
+        this.$setState({
+          fileLink: [offdataServer + operator + '/tblstatuswm.json',
+          offdataServer + operator + '/pbk.json',
+          offdataServer + operator + '/tbljenispelanggan.json',
+          offdataServer + operator + '/tblopp.json',
+          offdataServer + operator + '/tblpemakaianair.json',
+          offdataServer + operator + '/tblpelanggan.json',
+          offdataServer + operator + '/nonair_m_kec.json',
+          offdataServer + operator + '/nonair_m_desa.json',
+          offdataServer + operator + '/nonair_m_dusun.json',
+          offdataServer + operator + '/map_koordinatpelanggan.json',
+          offdataServer + operator + '/tblstatussmpelanggan.json'
+          ]
+        })
+        this.cekFile()
+
+      },
+      bacaFile(filename) {
+        var app = this.$app
+        var self = this
+        var filename = filename
+        var datafile = this.datafiles
+        //console.log(filename)
+        var index = this.indexArray(filename, datafile, 'nama')
+        var fileEntry = datafile[index].fileEntry
+        console.log(fileEntry)
+
+        app.dialog.confirm("Apakah Anda akan Memasang data (" + filename + ") sekarang! ", function () {
+
+          app.preloader.show()
+          fileEntry.file(function (file) {
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+              console.log('Convert Json :' + filename);
+              //console.log(this.result)
+
+              try {
+                var dat = JSON.parse(this.result)
+
+                //console.log(dat.rows.length)
+                //console.log(dat.rows)
+                self.convert2DB(dat, filename, 0)
+              } catch (err) { }
+            };
+
+            reader.readAsText(file);
+
+          }, function () { });
+
+
+        }, null)
+
+      },
+      cekTable: function () {
+        var app = this.$app
+        var webObj = app.data.webObj
+        var indexObj = app.data.indexObj
+        indexObj.cekInternet();
+      },
+      cekFile: function () {
+        var self = this
+        var app = this.$app
+        var webObj = app.data.webObj
+        var db = app.data.OPENDB
+        // path is the full absolute path to the file.
+        var filename = this.fileName
+        //'tblstatuswm','pbk','tbljenispelanggan','tblopp','tblpemakaianair','tblpelanggan'
+        var fileLabel = { 'tblstatuswm': 'Data Status Meter', 'pbk': 'Data Operator', 'tbljenispelanggan': 'Data Jenis Layanan', 'tblopp': 'Data link Operator', 'tblpemakaianair': 'Data Pemakaian Air', 'tblpelanggan': 'Data Pelanggan', 'nonair_m_kec': 'Data Kecamatan', 'nonair_m_desa': 'Data Desa', 'nonair_m_dusun': 'Data Dusun', 'map_koordinatpelanggan': 'Map Pelanggan', 'tblstatussmpelanggan': 'Status SM Pelanggan' }
+        var arrfiles = []
+        for (var i in filename) {
+          var path = cordova.file.cacheDirectory + filename[i] + '.json';
+          window.resolveLocalFileSystemURL(path,
+            function (fileEntry) {
+              //console.log(fileEntry)
+              var label = fileEntry.name.replace('.json', '')
+              var strlabel = label
+              if (label == "pbk")
+                strlabel = "pbk"
+
+              webObj.checkTable(strlabel, db, function (st, jum) {
+                if (st == "ok") {
+                  st = "true"
+                } else {
+                  st = "false"
+                }
+                fileEntry.file(function (file) {
+                  var fdate = new Date(file.lastModifiedDate)
+                  arrfiles.push({ nama: fileEntry.name, path: path, fileEntry: fileEntry, label: fileLabel[label], statusdb: st, jumlah: jum, tanggal: fdate })
+                  // arrfiles.push(fileEntry.name)
+                  self.$setState({ datafiles: arrfiles })
+                })
+              })
+
+            },
+            function () {
+              console.log('file tidak ditemukan' + path)
+            });
+
+        }
+      },
+      download: function (namafile, fileserver, status, step, pro, callback) {
+        var self = this
+        var status = status
+        var step = step
+        var pro = pro
+        console.log('start download')
+        var fileTransfer = new FileTransfer();
+        const uri = encodeURI(fileserver);
+        var fileURL = cordova.file.cacheDirectory + namafile + '.json';
+        fileTransfer.download(
+          uri, fileURL, function (entry) {
+            console.log("download complete: " + entry.toURL());
+
+            console.log('done ' + step)
+            self.$setState({ progress: pro })
+            self.$setState({ info: 'complete ' + self.fileLabel[step] })
+            step++
+            callback('done', step)
+
+          },
+
+          function (error) {
+            console.log("download error source " + error.source);
+            console.log("download error target " + error.target);
+            console.log("download error code" + error.code);
+            callback(status, step)
+
+          },
+
+          false, {
+          headers: {
+            "Authorization": "Basic dGVzdHVzZXJuYW1lOnRlc3RwYXNzd29yZA=="
+          }
+        }
+        );
+      },
+      initUpdate: function () {
+        var self = this
+        var app = this.$app
+        app.dialog.confirm("Download Data memerlukan koneksi Internet yang stabil dan waktu yang lumayan lama. Apakah anda mau melanjutkan Proses ini?", function () {
+          self.startUpdate()
+        }, null)
+
+      },
+      startUpdate: function () {
+        var app = this.$app
+        var self = this
+        var step = 0
+        var batas = this.batas
+        var status = 'done'
+        var tambah = 10
+        var jsonpObj = app.data.jsonpObj;
+        var webObj = app.data.webObj
+        var db = app.data.OPENDB
+        app.preloader.show()
+        console.log('start Download')
+        //run data/mysql-to-json.php dulu
+        var dataString = 'operator=' + app.data.loginfo.Name
+        jsonpObj.getTarget(app, 'mysql-to-json.php', dataString, function (st, dat) {
+          if (st == "ok") {
+            app.preloader.show()
+            var ID = setInterval(function () {
+              //console.log(step)
+
+              if (step <= batas) {
+                if (status == 'done') {
+                  status = 'proses'
+                  console.log('proses ' + step)
+                  console.log('Download ' + self.fileLabel[step])
+                  self.$setState({ info: 'Download ' + self.fileLabel[step] + '...' })
+                  var pro = (step + 1) * tambah
+                  console.log(self.fileName[step] + '=>' + self.fileLink[step])
+                  self.download(self.fileName[step], self.fileLink[step], status, step, pro,
+                    function (st, tep) {
+
+                      status = st
+                      step = tep
+                    })
+                }
+              } else {
+                clearInterval(ID);
+                self.$setState({ progress: 100 })
+                console.log("semua proses telah selesai")
+                self.$setState({ info: "semua proses telah selesai" })
+                step = 0;
+                status = "done"
+                var filename = self.fileName
+                var file_count = Object.keys(filename).length;
+                //alert('file_count: '+file_count)
+                self.clearTbl(0, file_count)                
+              }
+
+            }, 2000)
+          }
+        })
+
+
+      },
+      clearTbl: function (index, count) {
+        var app = this.$app
+        var db = app.data.OPENDB
+        var webObj = app.data.webObj
+        var self = this
+        var filename = this.fileName
+        //alert('clearTbl: '+index+'-'+count)
+        if (index < count) {
+          var sql = "DELETE FROM "+filename[index]
+          webObj.clearData(db, sql, function (st,msg) {
+            if (st != "ok") {
+              //alert('Gagal kosongkan data lama! ' + filename[index]+' - '+msg)
+              index++
+              self.clearTbl(index, count)
+            } else {
+              //alert('Sukses kosongkan data lama! ' + filename[index])
+              index++
+              self.clearTbl(index, count)
+            }
+          })
+        } else {
+          self.cekFile()
+          app.preloader.hide()
+        }
+      },
+      convert2DB: function (data, filename, index) {
+        var self = this
+        var app = this.$app
+        var webObj = app.data.webObj
+        var db = app.data.OPENDB
+        // console.log(data.rows.length) 
+        var fname = filename.replace('.json', '')
+        var dtable = data.rows
+        var total = dtable.length
+        var progress = Math.ceil((index / total) * 100)
+        var progress_nominal = index + "/" + total
+        this.$setState({ progress: progress })
+        this.$setState({ progress_nominal: progress_nominal })
+
+        //REPLACE INTO tbname() VALUES()
+        var cols = this.tblColums[fname]
+        // console.log(cols.join(','))
+        if (fname == "pbk")
+          fname = "pbk"
+
+        if (index < dtable.length) {
+          //for(var i in dtable)
+          //{
+          //console.log(i)
+          var arrvalue = [];
+          for (var a in cols) {
+            if (cols[a] == "GroupID") {
+              arrvalue.push(dtable[index][cols[a]])
+            } else {
+              arrvalue.push("'" + dtable[index][cols[a]] + "'")
+            }
+          }
+
+
+          var sql = "REPLACE INTO " + fname + "(" + cols.join(',') + ") VALUES(" + arrvalue.join(',') + ")"
+
+          // i++
+          webObj.insertData(db, sql, index, data, filename, function (st, index, data, filename) {
+            // console.log(sql)
+            self.$setState({ st_insert: st })
+            index++
+            self.convert2DB(data, filename, index)
+          })
+
+
+        } else {
+          app.preloader.hide()
+          this.cekFile()
+        }
+
+
+
+      },
+      indexArray: function (key, arr, col) {
+        var index = -1
+        for (var i in arr) {
+          if (arr[i][col] == key) {
+            index = i
+            break;
+          }
+        }
+        return index
+      }
+
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

@@ -1,0 +1,372 @@
+<template>
+    <div class="page" data-name="pd_bacameter">
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner sliding">
+                <div class="left">
+                    <a href="/home/" class="link">
+                        <i class="icon icon-back"></i>
+                        <span class="if-not-md">BACK</span>
+                    </a>
+                </div>
+                <div class="title">SINKRONISASI DATA OFFLINE</div>
+
+            </div>
+        </div>
+        <div class="page-content">
+            <!-- <div class="list no-hairlines-md">
+        <ul>          
+          <li class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">No. SBG/Nama </div>
+              <div class="item-input-wrap">
+                <input type="text" id="nomorrekening" placeholder="No. SBG/Nama">
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div> -->
+            <div class="block text-align-center">
+                <a href="#" @click="kirimAll" class="button button-fill color-red button-big">KIRIM DATA KE SERVER</a>
+            </div>
+
+            <div class="card data-table">
+                <div class="col-100 text-align-center"><p>{{progress_nominal}} / {{progress_total}}</p></div>
+            </div>
+
+            <div class="card data-table">
+                <div class="list">
+                    <ul class="listresult">
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</template>
+
+<style scoped>
+    .button {
+        height: 40px;
+        font-size: 17px;
+        padding-top: 8px;
+    }
+
+    select {
+        height: 40px;
+        font-size: 17px;
+    }
+
+    input {
+        height: 40px;
+        width: 100%;
+        border: 1px solid black;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .red {
+        color: red;
+    }
+</style>
+<script>
+    export default {
+        data: function () {
+
+            return {
+                waktu: '--',
+                info: {},
+                operator: '',
+                tipebaca: [],
+                arrstatus: [],
+                tipestatus: 'manual',
+                month_year: '-',
+                allkec: [],
+                alldesa: [],
+                alldusun: [],
+                kec: [],
+                desa: [],
+                dusun: [],
+                idkec: null,
+                iddesa: null,
+                iddusun: null,
+                nkec: '',
+                ndesa: '',
+                ndusun: '',
+                namastatus: 'terbaca',
+                datalocal: [],
+                datalocaltmp: [],
+                progress_nominal: 0,
+                progress_total: 0,
+            }
+        },
+        methods: {
+            init: function (page) {
+                var app = this.$app;
+                var indexObj = app.data.indexObj;
+                var jsonpObj = app.data.jsonpObj;
+                var username = app.data.user.username;
+                var jq = app.data.JQ;
+                var self = this
+                var dataString = 'username=' + username
+                var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+                var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+                var thari = waktu.split(',')
+                var nhari = parseInt(thari[0])
+                var namahari = hari[nhari]
+                var jcari = []
+                var date_get = indexObj.date_get();
+                var month_year = date_get.yyyy + '-' + date_get.mm
+                //jq('input[name=month_year]').val(month_year)              
+                var waktu = namahari + ', ' + thari[1];
+
+                this.$setState({ waktu: waktu })
+                this.$setState({ operator: app.data.loginfo.Name })
+
+                var nsObj = app.data.nsObj
+                var self = this
+                nsObj.getData("DATALOKAL", function (dat) {
+                    if (dat != 'undefined') {
+                        var data = JSON.parse(dat)
+                        //alert('panggil init')
+                        self.$setState({ datalocal: data })
+                        self.$setState({ datalocaltmp: data })
+                        app.preloader.show()
+                        self.cari()
+                        app.preloader.hide()
+                    }
+                })
+            },
+            cari: function () {
+                var app = this.$app;
+                var jq = app.data.JQ;
+                var indexObj = app.data.indexObj;
+                var jsonpObj = app.data.jsonpObj;
+                var self = this
+                var inc = 0
+
+                //jq('#kec option[value="3"]').prop('selected', true)
+                var jcari = []
+                var htmlstr = ''
+                var pagstr = ''
+                var date_get = indexObj.date_custome_get('', 'm', -1)
+                //get data local
+                //alert('data local length '+this.datalocaltmp.length)
+                if (this.datalocaltmp.length > 0) {
+
+                    jcari = this.datalocaltmp
+                    //var myJSON = JSON.stringify(data[0])
+                    //alert('jcari-'+jcari[0])                      
+                    if (jcari.length > 0) {
+                        for (var i in jcari) {
+                            //alert('data: - '+jcari[i].norek) 
+                            inc++
+                            jcari[i].idgambar = 'Sudah';
+                            jcari[i].pemakaianair = jcari[i].wmmeteran - jcari[i].pencatatanmeterprev;
+                            var label_link = 'Hapus Data';
+                            var index = this.findIndex(jcari[i].norek, this.datalocaltmp, "norek")
+                            var txt_pakai = '<br>Pemakaian Bulan ' + date_get.mm + '/' + date_get.yyyy + ': <strong>' + jcari[i].wmmeteran + '</strong> (' + jcari[i].pemakaianair + 'm3)';
+                            htmlstr += '<li>\
+                <a href="#" class="item-link item-content list-item" id="'+ index + '">\
+                <div class="item-media"><i class="icon icon-f7"></i></div>\
+                <div class="item-inner">\
+                    <div class="item-title">\
+                    <div class="item-header"><strong>'+ index + '). ' + jcari[i].norek + '</strong></div>' + jcari[i].namapelanggan + '<br>' + jcari[i].alamat + '<br>Status Pencatatan ' + date_get.mm + '/' + date_get.yyyy + ': <strong>' + jcari[i].idgambar + '</strong>' + txt_pakai + '</div>\
+                    <div class="item-after">'+ label_link + '</div>\
+                </div>\
+                </a>\
+            </li>'
+
+                        }
+                    }
+                    //alert(htmlstr)
+                    jq('ul.listresult').html(htmlstr)
+                    jq('.list-item').on('click', function () {
+                        self.delItem(jq(this).attr('id'))
+                        //self.delItem('lol')
+                    })
+                } else {
+                    htmlstr = ''
+                    jq('ul.listresult').html(htmlstr)
+                }
+            },
+            delItem: function (index) {
+                var app = this.$app
+                var self = this
+                var index = index
+                var nsObj = app.data.nsObj
+                app.dialog.confirm("Yakin hapus Data ini?", function () {
+                    var curdata = self.datalocal
+                    curdata.splice(index, 1)
+                    self.$setState({ datalocal: curdata })
+                    self.$setState({ datalocaltmp: curdata })
+                    nsObj.removeData("DATALOKAL")
+                    var datalocalnew = JSON.stringify(curdata)
+                    //alert('datalocalnew '+datalocalnew)
+                    nsObj.saveData("DATALOKAL", datalocalnew)
+                    self.cari()
+                },
+                    function () {
+
+                    })
+            },
+            delinItem: function (index, info, no, batas) {
+                var app = this.$app
+                var self = this
+                var index = index
+                var index_nxt = parseInt(index)+1
+                var nsObj = app.data.nsObj
+                var curdata = info
+                var data_length = curdata.length
+                //alert('curdata awal : '+curdata)
+                //alert('index_nxt: '+index_nxt)
+                var lastdata =curdata.slice(index_nxt)
+                //alert('curdata akhir : '+lastdata)
+                self.$setState({ datalocaltmp: lastdata })
+                nsObj.removeData("DATALOKAL")
+                var datalocalnew = JSON.stringify(lastdata)
+                nsObj.saveData("DATALOKAL", datalocalnew)
+                //this.showLocalstorage(info, no, batas)
+                this.sendDataMeter2(info, no, batas)
+            },
+            showLocalstorage: function (info, no, batas) {
+                var app = this.$app
+                var nsObj = app.data.nsObj
+                var self = this
+                nsObj.getData("DATALOKAL", function (dat) {
+                    if (dat != 'undefined') {
+                        var data = JSON.parse(dat)
+                        //alert('isi localstorage '+data)
+                        self.sendDataMeter2(info, no, batas)
+                    }
+                })
+            },
+            findIndex(key, arr, col) {
+                var rsl = -1
+                for (var i in arr) {
+                    if (arr[i][col] == key) {
+                        rsl = i
+                        break
+                    }
+                }
+                return rsl
+            },
+            sendDataMeter2: function (info, index, batas) {
+                //alert('data asli : '+info)
+                //var info = this.datalocal;
+                //alert('index: '+index+' info: '+info+' batas: '+batas)
+                var app = this.$app;
+                app.preloader.show();
+                var router = this.$f7router;
+                var nsObj = app.data.nsObj
+                var no = index
+                var self = this
+                //alert('no ' + no + 'batas ' + batas)
+                if (no < batas) {
+                    //file:
+                    // var imageURI = app.data.gambarinfo;
+                    var imageURI = info[no].imageURI;
+                    var options = new FileUploadOptions();
+                    options.fileKey = "file";
+                    options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
+                    options.mimeType = "image/jpeg";
+                    var params = {};
+                    // params.value1 = "test";
+                    //params.value2 = "param";
+                    info[no].imageURI = ""
+                    options.params = info[no];
+
+                    options.chunkedMode = false;
+                    options.headers = {
+                        Connection: "close"
+                    }
+
+                    var kirim_uri = ""
+                    if (app.data.user.appmode == "prod") {
+                        kirim_uri = "kirimdata.php"
+                    } else if (app.data.user.appmode == "dev") {
+                        kirim_uri = "kirimdata2.php"
+                    }
+                    var uri = encodeURI(app.data.config.mainServer + kirim_uri)
+                    var ft = new FileTransfer();
+                    //var info_ = info
+                    ft.upload(imageURI, uri,
+                        function (result) {
+                            //console.log('sukses : ' + JSON.stringify(result));
+                            //alert('sukses up : ' + JSON.stringify(result))
+                            var index_key = self.findIndex(info[no].norek, self.datalocal, "norek")
+                            //alert('sukses up, index : ' + index_key)
+                            
+                            app.preloader.hide();
+                            no++
+                            self.$setState({ progress_nominal: no })
+                            self.delinItem(index_key, info, no, batas)
+                            //self.sendDataMeter2(info_, no, batas)
+
+                        },
+                        function (error) {
+                            //console.log('Error : ' + JSON.stringify(error));
+                            self.cari()
+                            alert('Error: internet harus hidup untuk melakukan proses sync.'+ JSON.stringify(error))
+                            app.preloader.hide();                            
+                            // no++
+                            // self.sendDataMeter2(info_, no, batas)
+
+                        }, options);
+
+
+
+                } else {
+                    //lebih besar stop
+                    //alert('ending')
+                    app.preloader.hide();
+                    var curdata = []
+                    self.$setState({ datalocal: curdata })
+                    nsObj.removeData("DATALOKAL")
+                    self.cari()
+                    app.dialog.alert("Semua Data telah berhasil di Kirim ke Server")
+
+                }
+
+
+            },
+            kirimAll: function () {
+                var app = this.$app
+                var jsonpObj = app.data.jsonpObj
+
+                var dat = this.datalocal
+                var myJSON = JSON.stringify(dat)
+                //alert('myjson ' + myJSON)
+                var batas = dat.length
+                var self = this
+                app.dialog.confirm("Apakah Semua Data akan Anda Kirim ke Server?",
+                    function () {
+                        if (batas > 0) {
+                            //alert('proses')
+                            self.$setState({ progress_total: batas })
+                            self.sendDataMeter2(dat, 0, batas)
+                        } else {
+                            app.data.alert('Maaf Data Offline Kosong.')
+                        }
+                    }, null)
+
+            },
+            batal: function () {
+                var app = this.$app;
+                var router = this.$f7router;
+                app.data.pinfo = {}
+                app.data.wminfo = {}
+                app.data.gambarinfo = {}
+                router.navigate('/home/')
+            }
+
+        },
+        on: {
+            pageInit: function (e, page) {
+                this.init(page)
+            }
+        }
+
+    };
+</script>

@@ -1,0 +1,420 @@
+<template>
+  <div class="page" data-name="pd_pagepelanggan">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" @click="back" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">PENCATATAN METER</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="block">
+        <div class="text-align-center">{{waktu}}</div>
+        <div class="text-align-center">
+          <h3>PERUMDA TIRTA AMERTHA BUANA TABANAN</h3>
+        </div>
+      </div>
+
+      <div class="block">
+        <h2>Data Pelanggan</h2>
+      </div>
+      <div class="block">
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. SBG</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.norek}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Nama </div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.namapelanggan}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Alamat</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.alamat}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Golongan</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.idgol}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No Telp</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.telp}}</div>
+        </div>
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Tgl Pasang</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.tgltersambung}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">No. WM</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmnomor}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-40 label" style="font-size: larger;">Diameter WM</div>
+          <div class="col-5">:</div>
+          <div class="col-55 val" style="font-size: larger;">{{info.wmukuran}}</div>
+        </div>
+
+        <br>
+        <br>
+        <br>
+
+        <div class="row">
+          <div class="col-100">
+            <a href="#" @click="bacameteran" class="button button-fill button-big">BACA METERAN</a>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <h2>Operator : {{operator}}</h2>
+          </div>
+        </div>
+
+
+        <div class="row">
+          <div class="col-100">
+            <a href="#" @click="batal" class="button button-fill button-big">BATAL</a>
+          </div>
+        </div>
+
+
+      </div>
+
+
+
+    </div>
+
+  </div>
+</template>
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  .row {
+    height: 40px;
+  }
+
+  .row .label {
+    font-size: 17px;
+    font-weight: bold;
+    padding: 5px;
+
+  }
+</style>
+<script>
+  export default {
+
+    data: function () {
+
+      return {
+        pid: '',
+        waktu: '--',
+        info: {},
+        operator: '',
+        date_get: {},
+        pelanggan_off: {},
+      }
+    },
+
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var self = this
+        var dataString = 'username=' + username
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+        var thari = waktu.split(',')
+        var nhari = parseInt(thari[0])
+        var namahari = hari[nhari]
+        var waktu = namahari + ', ' + thari[1];
+        var pid = page.route.params.pid
+        app.data.userinfo.norek = pid
+        this.$setState({ pid: pid })
+        var jcari = []
+        var date_get = indexObj.date_get();
+        this.$setState({ date_get: date_get })
+        if (indexObj.cekInternet() == true) {
+          var dataString = 'Ymd=&adj=0&adj_type=m'
+          jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+            if (st == "ok") {
+              jcari = JSON.parse(pesan)
+              self.$setState({ date_get: jcari })
+            }
+          })
+        }
+        this.$setState({ waktu: waktu })//app.data.userinfo
+        this.$setState({ operator: app.data.loginfo.Name })
+
+        this.loadInfo()
+
+      },
+      back: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        router.back()
+      },
+      bacameteran: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var router = this.$f7router;
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("DD/MM/YYYY HH:mm:ss");
+        app.data.tawal_cek = waktu
+        var norek = this.pid
+        var dist_tolerancy = app.data.dist_tolerancy
+
+        //get location detail
+        var options_nav = {
+          enableHighAccuracy: true,
+          maximumAge: 3000,
+          timeout: 5000
+        };
+        app.preloader.show()
+        if (indexObj.cekInternet() == true) {
+          //navigator.geolocation.getCurrentPosition(function (position) {
+            var lat = 0//position.coords.latitude
+            var lng = 0//position.coords.longitude
+            var accuracy = 0//position.coords.accuracy
+            var destination = lat + ',' + lng
+
+            var dataString = 'nomorrekening=' + app.data.pinfo.nomorrekening + '&destination=' + destination
+            if (accuracy <= dist_tolerancy) {
+              jsonpObj.getTarget(app, 'getDistanceAccuracy.php', dataString, function (st, dat) {
+                if (st == "no") {
+                  //var data=JSON.parse(dat)
+                  app.dialog.alert('Posisi Pencatat Terlalu Jauh Dari Water Meter, Perbedaan Jarak:' + dat + ' meter' + 'lat,lng: ' + lat + ',' + lng + ',' + accuracy)
+                  app.preloader.hide()
+                  //router.navigate('/pd_pagepelanggan/')
+                } else {
+                  app.preloader.hide()
+                  router.navigate('/pd_pagegambar/')
+                }
+              })
+            } else {
+              app.preloader.hide()
+              app.dialog.alert('Akurasi GPS kurang akurat, tolong reset GPS, akurasi:' + accuracy + ' meter' + accuracy)
+            }
+          // }, function (error) {
+          //   app.preloader.hide()
+          //   app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu');
+          // }, { enableHighAccuracy: true, maximumAge: 3000, timeout: 5000 });
+        } else {
+          app.preloader.hide()
+          router.navigate('/pd_pagegambar/')
+        }
+      },
+      loadInfooff: function () {
+        //alert('loadInfooff')
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var webObj = app.data.webObj
+        var self = this
+        var norek = this.pid
+        var data_off = this.pelanggan_off
+        var getinfo = { norek: data_off.nomorrekening, namapelanggan: data_off.namapelanggan, alamat: data_off.alamat, jenispelanggan: data_off.jenispelanggan, telp: data_off.kontak, tgltersambung: data_off.tgltersambung, wmnomor: data_off.wmnomor, wmukuran: data_off.wmukuran, pencatatanmeterprev: data_off.pencatatanmeter, pemakaianairprev: data_off.pemakaianair, idgol: data_off.idgol, lat: data_off.lat, lng: data_off.lng, pemakaian_avg: data_off.meteran_avg }
+        data_off.pencatatanmeterprev = data_off.pencatatanmeter
+        data_off.pemakaianairprev = data_off.pemakaianair
+        data_off.statussmprev = data_off.statussm
+        data_off.pemakaian_avg = data_off.meteran_avg
+        data_off.meteran_avg = data_off.meteran_avg + data_off.pemakaianair
+        app.data.pinfo = data_off;
+        this.$setState({ info: getinfo })
+        //var myJSON = JSON.stringify(app.data.pinfo)
+        app.preloader.hide()
+        //alert('data_off ' + myJSON)
+      },
+      loadAvgoff: function () {
+        //alert('loadAvgoff')
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var webObj = app.data.webObj
+        var self = this
+        var norek = this.pid
+        var meteran_avg = 0
+        var jnc = 0
+        var jncdiv = 0
+        var statusprevset = false
+        var inc = 1
+        var data_off = self.pelanggan_off
+        for (inc = 1; inc < 4; inc++) {
+          var date_get_avg = indexObj.date_custome_get('', 'm', -inc)
+          var sql_avg = "SELECT pemakaianair" + date_get_avg.mtm + ",pencatatanmeter" + date_get_avg.mtm + " FROM tblpemakaianair WHERE tahunrekening='" + date_get_avg.yyyy + "' and nomorrekening='" + norek + "'"
+          webObj.pdam_select_avg(app.data.OPENDB, sql_avg, date_get_avg.mtm, function (st, mtm, data3) {
+            jnc++
+            if (st == "ok") {
+              jncdiv++
+              var dat_avg_arr = []
+              for (const [key, value] of Object.entries(data3)) {
+                dat_avg_arr[key] = value
+              }
+              meteran_avg += dat_avg_arr['pemakaianair' + mtm]
+            }
+            if (jnc == 3) {
+              meteran_avg = Math.round(meteran_avg / jncdiv)
+              data_off.meteran_avg = meteran_avg
+              self.$setState({ pelanggan_off: data_off })
+              self.loadInfooff()
+            }
+          })
+        }
+      },
+      loadStatusprevoff: function () {
+        //alert('loadStatusprevoff')
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var webObj = app.data.webObj
+        var self = this
+        var norek = this.pid
+        var statussm = '-'
+        var data_off = self.pelanggan_off
+        var date_get = indexObj.date_custome_get('', 'm', -1)
+        var sql_status = "SELECT statussm FROM tblstatussmpelanggan WHERE tahun='" + date_get.yyyy + "' and bulan='" + date_get.mtm + "' and nomorrekening='" + norek + "'"
+        webObj.selectQuery(app.data.OPENDB, sql_status, function (sts2, datas2) {
+          if (sts2 == "ok") {
+            statussm = datas2.statussm
+          }
+          data_off.statussm = statussm
+          self.$setState({ pelanggan_off: data_off })
+          self.loadAvgoff()
+        })
+      },
+      loadPemakaianprevoff: function () {
+        //alert('loadPemakaianprevoff')
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var webObj = app.data.webObj
+        var self = this
+        var norek = this.pid
+        var pencatatanmeter = 0
+        var pemakaianair = 0
+        var data_off = self.pelanggan_off
+        var date_get = indexObj.date_custome_get('', 'm', -1)
+        var sql = "SELECT pemakaianair" + date_get.mtm + ",pencatatanmeter" + date_get.mtm + " FROM tblpemakaianair WHERE tahunrekening='" + date_get.yyyy + "' and nomorrekening='" + norek + "'"
+        webObj.selectQuery(app.data.OPENDB, sql, function (st, data2) {
+          if (st == "ok") {
+            var dat = data2
+            var dat_arr = []
+            for (const [key, value] of Object.entries(dat)) {
+              dat_arr[key] = value
+            }
+            pencatatanmeter = dat_arr['pencatatanmeter' + date_get.mtm]
+            pemakaianair = dat_arr['pemakaianair' + date_get.mtm]
+          }
+          data_off.pencatatanmeter = pencatatanmeter
+          data_off.pemakaianair = pemakaianair
+          self.$setState({ pelanggan_off: data_off })
+          self.loadStatusprevoff()
+        })
+      },
+      loadPelangganoff: function () {
+        //alert('loadPelangganoff')
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var webObj = app.data.webObj
+        var self = this
+        var norek = this.pid
+        var sql = "SELECT mkp.*,tjp.*,tp.* FROM tblpelanggan tp LEFT JOIN tbljenispelanggan tjp ON tjp.id = tp.idgol LEFT JOIN map_koordinatpelanggan mkp ON tp.nomorrekening = mkp.nomorrekening WHERE tp.nomorrekening = '" + norek + "'"
+        //alert(sql)
+        webObj.selectQuery(app.data.OPENDB, sql, function (st, data) {
+          if (st == "ok") {
+            var kontak = data.telp
+            if (data.telp == "" || data.telp.length < 5) {
+              kontak = data.nomorhp
+            }
+            data.kontak = kontak
+            self.$setState({ pelanggan_off: data })
+            self.loadPemakaianprevoff()
+          }
+        })
+      },
+      loadInfo: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        //var norek = app.data.userinfo.norek
+        var norek = this.pid
+        var self = this
+        if (indexObj.cekInternet() == true) {
+          jsonpObj.getTarget(app, 'getInfoPelanggan.php', { norek: norek }, function (st, pesan) {
+            if (st == "ok") {
+              var data = JSON.parse(pesan)
+              ////nomorrekening,namapelanggan,alamat,jenispelanggan,telp,tgltersambung,wmnomor,wmukuran
+              var kontak = data.telp
+              if (data.telp == "" || data.telp.length < 5) {
+                kontak = data.nomorhp
+              }
+              //var date_get = indexObj.date_get();
+              var dataString = 'nomorrekening=' + norek + '&month=' + self.date_get.mm + '&year=' + self.date_get.yyyy
+              jsonpObj.getTarget(app, 'getpemakaianlalu.php', dataString, function (st, dat, avg) {
+                if (st == "ok") {
+                  var dat = JSON.parse(dat)
+                  var meteran_avg = avg
+                  //alert('Rata-'+meteran_avg+'-'+dat.pemakaianair)
+                  //app.dialog.alert('Test-'+dat.pencatatanmeter)
+                  var getinfo = { norek: data.nomorrekening, namapelanggan: data.namapelanggan, alamat: data.alamat, jenispelanggan: data.jenispelanggan, telp: kontak, tgltersambung: data.tgltersambung, wmnomor: data.wmnomor, wmukuran: data.wmukuran, pencatatanmeterprev: dat.pencatatanmeter, pemakaianairprev: dat.pemakaianair, idgol: data.idgol, lat: data.lat, lng: data.lng, pemakaian_avg: meteran_avg }
+                  data.pencatatanmeterprev = dat.pencatatanmeter
+                  data.pemakaianairprev = dat.pemakaianair
+                  data.statussmprev = dat.statussm
+                  data.pemakaian_avg = meteran_avg
+                  data.meteran_avg = meteran_avg + dat.pemakaianair
+                  app.data.pinfo = data;
+                  self.$setState({ info: getinfo })
+                }
+              })
+            }
+          })
+        } else {
+          app.preloader.show()
+          this.loadPelangganoff()
+        }
+      },
+
+      batal: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        app.data.pinfo = {}
+        app.data.wminfo = {}
+        app.data.gambarinfo = {}
+        router.navigate('/home/')
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

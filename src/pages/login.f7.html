@@ -1,0 +1,178 @@
+<template>
+  <div class="page" data-name="login">
+
+    <div class="page-content" style="background:url('./static/images/bg1.gif') no-repeat top">
+      <br> <br> <br>
+      <div class="block-inner" style="padding-top:50">
+        <div class="text-align-center"><img src='./static/images/logo.png' /></div>
+        <div class="login-screen-title" style="color: white;">Login</div>
+        <div class="card">
+          <div class="list">
+            <ul>
+              <li class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Nama / Mobile (tanpa +) </div>
+                  <div class="item-input-wrap">
+                    <input type="text" id="username" placeholder="628199009018">
+                  </div>
+                </div>
+              </li>
+              <li class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Kata Sandi</div>
+                  <div class="item-input-wrap">
+                    <input type="password" id="password" placeholder="Kata Sandi">
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="block text-align-center">
+
+          <a href="#" @click="login" class="button button-fill color-red button-big">MASUK</a>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</template>
+<style scoped>
+  .item-label {
+    font-size: 17px;
+    height: 44px;
+    text-align: center;
+  }
+
+  .button {
+    height: 44px;
+    font-size: 17px;
+    font-weight: bold;
+    padding-top: 5px;
+  }
+</style>
+<script>
+  export default {
+    data: function () {
+      return {
+        //q: 5
+        date_get: {},
+      }
+    },
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var self = this;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var password = app.data.user.password;
+        var indexObj = app.data.indexObj
+        var dataString = 'uname=' + username + '&upass=' + password
+        //date test
+        var jcari = []
+        var date_get = indexObj.date_get();
+        this.$setState({ date_get: date_get })
+        if (indexObj.cekInternet() == true) {
+          var dataString = 'Ymd=&adj=0&adj_type=m'
+          jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+            if (st == "ok") {
+              jcari = JSON.parse(pesan)
+              self.$setState({ date_get: jcari })
+            }
+          })
+        }
+        //end test
+        if (indexObj.cekInternet() == true) {
+            //alert('ada internet')
+        }else{
+            //alert('no internet')
+        }
+      },
+
+
+      login: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var jsonpObj = app.data.jsonpObj;
+        var router = this.$f7router;        
+
+        var username = jq('#username').val();
+        var password = jq('#password').val();
+
+        //alert(username +',' + password)
+        var indexObj = app.data.indexObj
+
+
+        if (username == "" || password == "") {
+
+          app.dialog.alert("Maaf, Mohon isi Nama Pengguna dan Kata Sandi!", 'Best')
+
+        } else {          
+          var dataString = 'uname=' + username + '&upass=' + password
+          if (indexObj.cekInternet() == true) {
+            //alert('ada internet')
+            jsonpObj.login(app, dataString, function (st, pesan, info) {
+
+              if (st == "ok") {
+                var data = JSON.parse(info)
+                app.data.userinfo = data;
+                var akunname_data = JSON.stringify({ username: username, password: password });
+                app.data.nsObj.saveData("AKUNNAME", akunname_data)
+                app.data.nsObj.saveData("LOGIN", "true")
+                app.data.user.username = username;
+                app.data.user.password = password;
+
+                var indexObj = app.data.indexObj
+                // indexObj.setMemberTipe(app,data.pcktaken)
+
+                router.navigate('/home/')
+
+              } else {
+                app.data.nsObj.saveData("LOGIN", "false")
+                app.dialog.alert('Salah Nama Pengguna/Kata Sandi!', 'PERUMDA')
+              }
+
+            })
+
+          } else {
+            //alert('offline')
+            //offline
+            var webObj = app.data.webObj
+            var sql = "SELECT * FROM pbk WHERE (UPPER(Name) = UPPER('" + username + "') OR Number = '" + username + "') COLLATE NOCASE"
+            //var sql = "SELECT * FROM pbk"
+            //app.dialog.alert(sql)
+            webObj.selectQuery(app.data.OPENDB, sql, function (st, data) {
+              //alert(st+' - '+data)
+              if (st == "ok") {
+                //console.log(data)
+                //alert(data.Name)
+                var data = data
+                app.data.userinfo = data;
+                var akunname_data = JSON.stringify({ username: username, password: password });
+                app.data.nsObj.saveData("AKUNNAME", akunname_data)
+                app.data.nsObj.saveData("LOGIN", "true")
+                app.data.user.username = username;
+                app.data.user.password = password;
+                router.navigate('/home/')
+              } else {
+                app.data.nsObj.saveData("LOGIN", "false")
+                app.dialog.alert('Salah Nama Pengguna/Kata Sandi!', 'PERUMDA')
+              }
+            })
+          }
+        }//else
+
+      },
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

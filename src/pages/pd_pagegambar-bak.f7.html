@@ -1,0 +1,149 @@
+<template>
+  <div class="page" data-name="pd_pagegambar">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="/pd_pagepelanggan/" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">PENCATATAN METER</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block">
+        <div class="text-align-center">{{waktu}}</div>
+        <div class="text-align-center">
+          <h3>PERUMDA TIRTA AMERTHA BUANA TABANAN</h3>
+        </div>
+      </div>
+
+      <div class="card">
+
+        <div class="row">
+          <div class="col-100">
+            <img src="{{imageSrc}}" style="width: 100%;" id="myImage">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100">
+            <a href="#" @click="scan" class="button button-fill button-big">{{scanlabel}}</a>
+          </div>
+        </div>
+
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <h2>Operator : {{operator}}</h2>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100">
+            <a href="#" @click="batal" class="button button-fill button-big">BATAL</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</template>
+
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+</style>
+<script>
+  export default {
+    data: function () {
+
+      return {
+        waktu: '--',
+        operator: '',
+        info: {},
+        imageSrc: './static/images/wmmeter.png',
+        scanlabel: 'SCAN PHOTO',
+        scanStatus: false
+      }
+    },
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var dataString = 'username=' + username
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+        var thari = waktu.split(',')
+        var nhari = parseInt(thari[0])
+        var namahari = hari[nhari]
+        var waktu = namahari + ', ' + thari[1];
+
+        this.$setState({ waktu: waktu })
+        this.$setState({ operator: app.data.loginfo.Name })
+
+
+      },
+      batal: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        app.data.pinfo = {}
+        app.data.wminfo = {}
+        app.data.gambarinfo = {}
+        router.navigate('/home/')
+      },
+      scan: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+
+        // router.navigate('/home/')
+        if (this.scanStatus == true) {
+
+          router.navigate('/pd_bacameter/')
+
+        } else {
+          navigator.camera.getPicture(this.scanSuccess, this.scanFail, {
+            quality: 100,
+            targetHeight: 480,
+            destinationType: Camera.DestinationType.FILE_URI //FILE_URI,DATA_URI
+          });
+
+        }
+
+      },
+      scanSuccess: function (imageUri) {
+        var app = this.$app
+        var jq = app.data.JQ
+        // var image = document.getElementById('myImage'); 
+        // var src = "data:image/jpeg;base64," + imageData; 
+        //  jq('#myImage').attr('src',src)
+        //var img = "data:image/jpeg;base64," + imageUri; 
+        this.$setState({ imageSrc: imageUri })
+        app.data.gambarinfo = imageUri;
+
+        this.$setState({ scanStatus: true })
+        this.$setState({ scanlabel: 'PROSES' })
+      },
+      scanFail: function (msg) {
+        alert('Maaf, Gagal mengambil gambar, karena ' + msg)
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

@@ -1,0 +1,465 @@
+<template>
+  <div class="page" data-name="pd_bacameter">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" @click="back" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">PENCATATAN METER</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="list no-hairlines-md">
+        <ul>
+          <li>
+            <div class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Bulan Catat</div>
+                <div class="item-input-wrap">
+                  <input type="date" id="date_now" name="date_now" value="">
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        <ul>
+          <li>
+            <a class="item-link smart-select smart-select-init" data-open-in="sheet">
+              <select name="status_catat" id="status_catat" @change="ubahstatus">
+              </select>
+              <div class="item-content">
+                <div class="item-inner">
+                  <div class="item-title" style="font-size: 17px;">Status <span id="status_label"></span></div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">No. SBG/Nama </div>
+              <div class="item-input-wrap">
+                <input type="text" id="nomorrekening" placeholder="No. SBG/Nama">
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="block text-align-center">
+        <a href="#" @click="cari" class="button button-fill color-red button-big">CARI</a>
+      </div>
+
+      <div class="card data-table">
+        <div class="list">
+          <ul class="listresult">
+          </ul>
+        </div>
+        <div class="data-table-footer">
+          <div class="data-table-pagination pagination-container">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</template>
+
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  select {
+    height: 40px;
+    font-size: 17px;
+  }
+
+  input {
+    height: 40px;
+    width: 100%;
+    border: 1px solid black;
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .red {
+    color: red;
+  }
+</style>
+<script>
+  export default {
+    data: function () {
+
+      return {
+        waktu: '--',
+        info: {},
+        operator: '',
+        tipebaca: [],
+        arrstatus: [],
+        tipestatus: 'manual',
+        date_now: '-',
+        allkec: [],
+        alldesa: [],
+        alldusun: [],
+        kec: [],
+        desa: [],
+        dusun: [],
+        idkec: null,
+        iddesa: null,
+        iddusun: null,
+        nkec: '',
+        ndesa: '',
+        ndusun: '',
+        namastatus: 'terbaca',
+      }
+    },
+    methods: {
+      init: function (page) {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var self = this
+        var router = this.$f7router;
+        //redirect
+        if (indexObj.cekInternet() == false) {
+          router.navigate('/pd_pagehistoryoffline/')
+        }
+
+        var dataString = 'username=' + username
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+        var thari = waktu.split(',')
+        var nhari = parseInt(thari[0])
+        var namahari = hari[nhari]
+        var jcari = []
+        var date_get = indexObj.date_get();
+        var date_now = date_get.yyyy + '-' + date_get.mm + '-' + date_get.dd
+        //alert(date_now)
+        jq('input[name=date_now]').val(date_now)
+        var dataString = 'Ymd=&adj=0&adj_type=m'
+        jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+          if (st == "ok") {
+            jcari = JSON.parse(pesan)
+            var date_now = jcari.yyyy + '-' + jcari.mm + '-' + jcari.dd
+            //alert(date_now)
+            jq('input[name=date_now]').val(date_now)
+            var waktu = namahari + ', ' + thari[1];
+
+            self.$setState({ waktu: waktu })
+            self.$setState({ operator: app.data.loginfo.Name })
+            self.loadstatus()
+            app.preloader.show()
+            if (app.data.current_page > 0) {
+              self.cari_nxtprev()
+            } else {
+              self.cari()
+            }
+            app.preloader.hide()
+          }
+        })
+
+      },
+      back: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        router.back()
+      },
+      loadstatus: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var status = ["semua", "sudah", "belum"]
+        var option = ''
+        for (var i in status) {
+          var status_catat = status[i]
+          if (status_catat == app.data.status_catat_glob) {
+            option += '<option value="' + status_catat + '" selected>' + status_catat + '</option>'
+            jq('#status_label').html('(' + status_catat + ')')
+          } else {
+            option += '<option value="' + status_catat + '">' + status_catat + '</option>'
+          }
+        }
+        jq('#status_catat').html(option)
+        app.preloader.hide()
+      },
+      ubahstatus: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var status = jq('select[name=status_catat]').val()
+        app.data.status_catat_glob = status
+        jq('#status_label').html('(' + status + ')')
+      },
+      cari: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var self = this
+        app.preloader.show()
+
+        //alert('cari')
+        app.preloader.show()
+
+        //set page
+        app.data.current_page = 1
+        //alert('app.data.current_page')
+        var row_start = (app.data.current_page - 1) * app.data.per_page
+        var row_num = app.data.per_page
+
+        //jq('#kec option[value="3"]').prop('selected', true)
+
+        var date_now = jq('#date_now').val()
+        var date_now_arr = date_now.split("-")
+        var month_year = date_now_arr[0] + '-' + date_now_arr[1]
+        //var date_now = date_now_arr[2] + '-' + date_now_arr[1] + '-' + date_now_arr[0]
+        var operator = app.data.loginfo.Name
+        var filter = jq('#status_catat').val()
+        var keyword = jq('#nomorrekening').val()
+        var dataString = 'Ymd=' + month_year + '-01&adj=0&adj_type=m'
+        var jcari = []
+        jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+          if (st == "ok") {
+            jcari = JSON.parse(pesan)
+            var dataString = 'month_year=' + month_year + '&operator=' + operator + '&filter=' + filter + '&tahunrekening=' + jcari.yyyy + '&mtm=' + jcari.mtm + '&mm=' + jcari.mm + '&row_start=' + row_start + '&row_num=' + row_num + '&norek=' + keyword + '&date_now=' + date_now
+            //app.dialog.alert('Maaf, '+dataString);
+            //alert(dataString)
+            var jcari = []
+            var htmlstr = ''
+            var pagstr = ''
+
+            var dataString_arr = dataString.split("&")
+            var yy_arr = dataString_arr[3].split("=")
+            var mm_arr = dataString_arr[5].split("=")
+            var cmp_update = 20200920
+            var inc = row_start
+            //alert(status)
+            jsonpObj.getTarget(app, 'getHistorygambarmetersms.php', dataString, function (st, pesan, pesan2) {
+
+              //alert(st+';'+pesan2)
+              if (st == "ok") {
+
+                jcari = JSON.parse(pesan)
+                //pagination
+                var prev_active = ''
+                var next_active = ''
+                var prev_link = 'cari_prev'
+                var next_link = 'cari_nxt'
+                var total_page = Math.ceil(pesan2 / app.data.per_page)
+                var prev_page = app.data.current_page - 1
+                var next_page = app.data.current_page + 1
+                if (prev_page == 0) {
+                  prev_active = 'disabled'
+                  prev_link = ''
+                }
+                if (next_page > total_page) {
+                  next_active = 'disabled'
+                  next_link = ''
+                }
+                pagstr = '<span class="data-table-pagination-label">page ' + app.data.current_page + ' of ' + total_page + '</span>\
+                    <a href="#" @click="'+ prev_link + '" class="link prev_link ' + prev_active + '">\
+                      <i class="icon icon-prev color-gray"></i>\
+                    </a>\
+                    <a href="#" @click="'+ next_link + '" class="link next_link ' + next_active + '">\
+                      <i class="icon icon-next color-gray"></i>\
+                    </a>'
+                //alert('Pagination: '+pagstr)      
+                if (jcari.length > 0) {
+                  for (var i in jcari) {
+                    inc++
+                    if (jcari[i].idgambar == null) {
+                      jcari[i].idgambar = '<span class="red">Belum</span>';
+                      var link = '/pd_pagepelanggandetil/' + jcari[i].nomorrekening;
+                      var label_link = 'Baca Meter';
+                      var txt_pakai = '';
+                    } else {
+                      jcari[i].idgambar = 'Sudah';
+                      var link = '/pd_pagetagihandetil/' + jcari[i].nomorrekening + ':' + mm_arr[1] + ':' + yy_arr[1];
+                      var label_link = 'Info Tagihan';
+                      var txt_pakai = '<br>Pemakaian Bulan ' + mm_arr[1] + '/' + yy_arr[1] + ': <strong>' + jcari[i].pencatatanmeter + '</strong> (' + jcari[i].pemakaianair + 'm3)';
+                    }
+                    var class_passive = "";
+                    var link_buka = link;
+                    if (jcari[i].status == 0) {
+                      class_passive = "red";
+                      link_buka = "#";
+                    }
+                    htmlstr += '<li>\
+                  <a href="'+ link_buka + '" class="item-link item-content">\
+                    <div class="item-media"><i class="icon icon-f7"></i></div>\
+                    <div class="item-inner">\
+                      <div class="item-title '+ class_passive + '">\
+                        <div class="item-header"><strong>'+ inc + '). ' + jcari[i].nomorrekening + '</strong></div>' + jcari[i].namapelanggan + '<br>' + jcari[i].alamat + '<br>Status Pencatatan ' + mm_arr[1] + '/' + yy_arr[1] + ': <strong>' + jcari[i].idgambar + '</strong>' + txt_pakai + '</div>\
+                      <div class="item-after">'+ label_link + '</div>\
+                    </div>\
+                  </a>\
+                </li>'
+
+                  }
+                }
+              }
+              //alert(htmlstr)
+              jq('ul.listresult').html(htmlstr)
+              jq("div.pagination-container").html(pagstr)
+              jq('.prev_link').on('click', function () {
+                app.data.current_page = app.data.current_page - 1
+                self.cari_nxtprev()
+              })
+              jq('.next_link').on('click', function () {
+                app.data.current_page = app.data.current_page + 1
+                self.cari_nxtprev()
+              })
+              app.preloader.hide()
+            })
+          }
+        })
+      },
+      cari_nxtprev: function () {
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var self = this
+        app.preloader.show()
+
+        //alert('cari next')
+        app.preloader.show()
+
+        //set page
+        //alert('app.data.current_page')
+        var row_start = (app.data.current_page - 1) * app.data.per_page
+        var row_num = app.data.per_page
+
+        //jq('#kec option[value="3"]').prop('selected', true)
+
+        var date_now = jq('#date_now').val()
+        var date_now_arr = date_now.split("-")
+        var month_year = date_now_arr[0] + '-' + date_now_arr[1]
+        //var date_now = date_now_arr[2] + '-' + date_now_arr[1] + '-' + date_now_arr[0]
+        var operator = app.data.loginfo.Name
+        var filter = jq('#status_catat').val()
+        var keyword = jq('#nomorrekening').val()
+        var dataString = 'Ymd=' + month_year + '-01&adj=0&adj_type=m'
+        var jcari = []
+        jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+          if (st == "ok") {
+            jcari = JSON.parse(pesan)
+            var dataString = 'month_year=' + month_year + '&operator=' + operator + '&filter=' + filter + '&tahunrekening=' + jcari.yyyy + '&mtm=' + jcari.mtm + '&mm=' + jcari.mm + '&row_start=' + row_start + '&row_num=' + row_num + '&norek=' + keyword + '&date_now=' + date_now
+            //app.dialog.alert('Maaf, '+dataString);
+            //alert(dataString)
+            var jcari = []
+            var htmlstr = ''
+            var pagstr = ''
+
+            var dataString_arr = dataString.split("&")
+            var yy_arr = dataString_arr[3].split("=")
+            var mm_arr = dataString_arr[5].split("=")
+            var cmp_update = 20200920
+            var inc = row_start
+            //alert(status)
+            jsonpObj.getTarget(app, 'getHistorygambarmetersms.php', dataString, function (st, pesan, pesan2) {
+
+              //alert(st+';'+pesan2)
+              if (st == "ok") {
+
+                jcari = JSON.parse(pesan)
+                //pagination
+                var prev_active = ''
+                var next_active = ''
+                var prev_link = 'cari_prev'
+                var next_link = 'cari_nxt'
+                var total_page = Math.ceil(pesan2 / app.data.per_page)
+                var prev_page = app.data.current_page - 1
+                var next_page = app.data.current_page + 1
+                if (prev_page == 0) {
+                  prev_active = 'disabled'
+                  prev_link = ''
+                }
+                if (next_page > total_page) {
+                  next_active = 'disabled'
+                  next_link = ''
+                }
+                pagstr = '<span class="data-table-pagination-label">page ' + app.data.current_page + ' of ' + total_page + '</span>\
+                    <a href="#" @click="'+ prev_link + '" class="link prev_link ' + prev_active + '">\
+                      <i class="icon icon-prev color-gray"></i>\
+                    </a>\
+                    <a href="#" @click="'+ next_link + '" class="link next_link ' + next_active + '">\
+                      <i class="icon icon-next color-gray"></i>\
+                    </a>'
+                //alert('Pagination: '+pagstr)      
+                if (jcari.length > 0) {
+                  for (var i in jcari) {
+                    inc++
+                    if (jcari[i].idgambar == null) {
+                      jcari[i].idgambar = '<span class="red">Belum</span>';
+                      var link = '/pd_pagepelanggandetil/' + jcari[i].nomorrekening;
+                      var label_link = 'Baca Meter';
+                      var txt_pakai = '';
+                    } else {
+                      jcari[i].idgambar = 'Sudah';
+                      var link = '/pd_pagetagihandetil/' + jcari[i].nomorrekening + ':' + mm_arr[1] + ':' + yy_arr[1];
+                      var label_link = 'Info Tagihan';
+                      var txt_pakai = '<br>Pemakaian Bulan ' + mm_arr[1] + '/' + yy_arr[1] + ': <strong>' + jcari[i].pencatatanmeter + '</strong> (' + jcari[i].pemakaianair + 'm3)';
+                    }
+                    var class_passive = "";
+                    var link_buka = link;
+                    if (jcari[i].status == 0) {
+                      class_passive = "red";
+                      link_buka = "#";
+                    }
+                    htmlstr += '<li>\
+                  <a href="'+ link_buka + '" class="item-link item-content">\
+                    <div class="item-media"><i class="icon icon-f7"></i></div>\
+                    <div class="item-inner">\
+                      <div class="item-title '+ class_passive + '">\
+                        <div class="item-header"><strong>'+ inc + '). ' + jcari[i].nomorrekening + '</strong></div>' + jcari[i].namapelanggan + '<br>' + jcari[i].alamat + '<br>Status Pencatatan ' + mm_arr[1] + '/' + yy_arr[1] + ': <strong>' + jcari[i].idgambar + '</strong>' + txt_pakai + '</div>\
+                      <div class="item-after">'+ label_link + '</div>\
+                    </div>\
+                  </a>\
+                </li>'
+
+                  }
+                }
+              }
+              //alert(htmlstr)
+              jq('ul.listresult').html(htmlstr)
+              jq("div.pagination-container").html(pagstr)
+              jq('.prev_link').on('click', function () {
+                app.data.current_page = app.data.current_page - 1
+                self.cari_nxtprev()
+              })
+              jq('.next_link').on('click', function () {
+                app.data.current_page = app.data.current_page + 1
+                self.cari_nxtprev()
+              })
+              app.preloader.hide()
+            })
+          }
+        })
+      },
+      batal: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        app.data.pinfo = {}
+        app.data.wminfo = {}
+        app.data.gambarinfo = {}
+        router.navigate('/home/')
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>

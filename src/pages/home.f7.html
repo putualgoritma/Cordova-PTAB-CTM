@@ -1,0 +1,387 @@
+<template>
+  <div class="page theme-light HomePage" data-name="home">
+    <!-- Top Navbar -->
+    <div class="navbar navbar-large  text-color-white">
+      <div class="navbar-bg bg-color-red"></div>
+      <div class="navbar-inner bg-color-red">
+        <div class="left text-color-white">
+          <a href="#" class="link icon-only panel-open " data-panel="left">
+            <i class="icon f7-icons if-not-md text-color-white">menu</i>
+            <i class="icon material-icons if-md text-color-white">menu</i>
+          </a>
+        </div>
+        <div class="title sliding bg-color-red">PENCATATAN METER</div>       
+
+        <div class="title-large bg-color-red">
+          <div class="title-large-text text-align-center">PENCATATAN METER</div>
+        </div>
+      </div>
+    </div>
+    <!-- Toolbar-->
+
+    <!-- <div class="toolbar tabbar tabbar-labels toolbar-bottom bg-color-red">
+      <div class="toolbar-inner bg-color-red">
+
+
+        <a href="/download/" class="tab-link text-color-white">
+          <i class="icon f7-icons if-not-md">arrow_down_square_fill</i>
+          <span class="tabbar-label">Update Data</span>
+        </a>
+
+      </div>
+    </div> -->
+
+    <!-- Scrollable page content-->
+    <div class="page-content margin-top" style="background:url('./static/images/bg1.gif') no-repeat top">
+      <div class="block" style="text-align: center;color: white;font-size: 14px;">PERUMDA TIRTA AMERTHA BUANA TABANAN
+      </div>
+      <div class="block-inner" style="padding-top:50">
+        <div class="text-align-center"><img src='./static/images/logo.png' /></div>
+        <div class="login-screen-title waktu" style="color: white;"></div>
+        <div class="text-align-center">ver: 01-07-2021</div>
+        <div class="card">
+          <div>
+            <h1 class="namaanggota">{{namaAnggota}}</h1>
+          </div>
+        </div>
+        <!--market place slide -->
+        <br>
+        <br>
+
+
+        <div class="block">
+          <div class="row">
+            <div class="col-50">
+              <div class="card">
+                <a href="#" @click="doScanning">
+                  <img src="./static/images/scan.png" style="width: 100%;max-width: 200px;">
+                </a>
+              </div>
+              <div class="label">Scan QR</div>
+            </div>
+            <div class="col-50">
+              <div class="card">
+                <a href="/pd_pagecarimanual/">
+                  <img src="./static/images/search.png" style="width: 100%;max-width: 200px;">
+                </a>
+              </div>
+              <div class="label">Cari Pelanggan</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-50">
+              <div class="card">
+                <a href="/pd_pagecaripelanggan/">
+                  <img src="./static/images/mapping.png" style="width: 100%;max-width: 200px;">
+                </a>
+              </div>
+              <div class="label">Mapping Pelanggan</div>
+            </div>
+            <div class="col-50">
+              <div class="card">
+                <a href="/pd_pagehistorycatat/">
+                  <img src="./static/images/history.png" style="width: 100%;max-width: 200px;">
+                </a>
+              </div>
+              <div class="label">History Pencatatan</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-50">
+              <div class="card">
+                <a href="/pd_pagehistoryoffline/">
+                  <img src="./static/images/sync.png" style="width: 100%;max-width: 200px;">
+                </a>
+              </div>
+              <div class="label">Sinkronisasi Data Offline</div>
+            </div>
+            <div class="col-50">
+              <div class="card">
+                <a href="/download/">
+                  <img src="./static/images/download.png" style="width: 100%;max-width: 200px;">
+                </a>
+              </div>
+              <div class="label">Download Data</div>
+            </div>
+          </div>
+
+
+        </div>
+
+
+
+
+      </div>
+
+      <!-- Left panel with cover effect-->
+      <div class="panel panel-left panel-cover panel-init">
+        <div class="view">
+          <div class="page">
+            <div class="navbar">
+              <div class="navbar-bg"></div>
+              <div class="navbar-inner">
+                <div class="title">Menu</div>
+              </div>
+            </div>
+            <div class="page-content bg-color-white">
+              <div class="list text-color-black bg-color-white">
+
+                <div class="menu_list">
+                  <ul>
+                    <li><a href="/home/" class="button ">Home</a> </li>
+                    <li><a href="/keluar/" class="button">Keluar</a> </li>
+                    <li><a href="/logout/" class="button">Logout</a> </li>
+                  </ul>
+
+                </div>
+              </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+</template>
+<style scoped>
+  .namaanggota {
+    text-align: center;
+    padding: 5px;
+  }
+
+  .label {
+    text-align: center;
+    font-size: large;
+  }
+</style>
+<script>
+
+  export default {
+    data: function () {
+
+
+      return {
+        namaAnggota: '',
+        prestasi: 0,
+        waktu: '',
+        products_fav: []
+      }
+
+
+    },
+    methods: {
+
+      openLogin: function () {
+        var router = this.$f7router;
+        var app = this.$app;
+        var jq = app.data.JQ;
+        var indexObj = app.data.indexObj;
+        this.resetCek() //reset semua data sementara 
+        var waktu;
+        var self = this
+        setInterval(function () {
+          waktu = app.data.Moment2().tz("Asia/Makassar").format("DD MMM YYYY H:m:s");
+          jq('.waktu').html(waktu)
+        }, 1000)
+
+        //this.setAturan(app)
+
+        app.data.nsObj.getData("LOGIN", function (dat) {
+
+          //alert(dat)
+
+          if (dat == "undefined" || dat == "false") {
+            router.navigate('/login/')
+
+          } else if (dat == "true") {           
+
+            app.data.nsObj.getData("AKUNNAME", function (akuns) {
+              let akun = JSON.parse(akuns)
+              let username = akun.username;
+              let password = akun.password;
+
+              app.data.user.username = username;
+              app.data.user.password = password;
+
+              var notificationWithButton = app.notification.create({
+                icon: '<i class="icon demo-icon">7</i>',
+                title: 'Framework7',
+                subtitle: 'Notification with close button',
+                text: 'Click (x) button to close me',
+                closeButton: true,
+              });
+
+              var Moment = app.data.Moment;
+              var akhir = Moment().format("YYYY-MM-DD");
+              var awal = Moment(akhir).add(-1, 'days').format("YYYY-MM-DD");
+              var dataString2 = 'username=' + username + '&awal=' + awal + '&akhir=' + akhir;
+
+              var obj = app.data.jsonpObj;
+              //refresh data
+              var dataString = 'uname=' + username + '&upass=' + password
+
+              //alert(dataString)
+              var app_ = app
+              if (indexObj.cekInternet() == true) {
+                obj.login(app, dataString, function (st, pesan, info) {
+
+                  if (st == "ok") {
+                    var data = JSON.parse(info)
+
+                    //jq('.namaAnggota').html(data.Name)
+                    self.$setState({ namaAnggota: data.Name })
+                    // console.log(data)
+                    app_.data.loginfo = data;
+                    app_.data.bukaAPP = 2;
+                  } else {
+                    //app.loginScreen.open('#my-login-screen');
+                    router.navigate('/login/')
+                  }
+
+                })
+              } else {//tidak ada internet
+
+                var webObj = app.data.webObj
+                var sql = "SELECT * FROM pbk WHERE (UPPER(Name) = UPPER('" + username + "') OR Number = '+" + username + "') COLLATE NOCASE"
+                console.log(sql)
+                webObj.selectQuery(app.data.OPENDB, sql, function (st, data) {
+                  if (st == "ok") {
+                    var data = data
+
+                    //jq('.namaAnggota').html(data.Name)
+                    self.$setState({ namaAnggota: data.Name })
+                    // console.log(data)
+                    app_.data.loginfo = data;
+                    app_.data.bukaAPP = 2;
+
+                  } else {
+                    router.navigate('/login/')
+                  }
+                })
+              }
+            })//end akunname
+          }
+        })
+      },
+
+      pageNav: function (page) {
+        this.$f7router.navigate(page)
+      },
+
+      refreshInfo: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        indexObj.refreshInfo(app)
+        // alert(app.data.waktu.tunggu+','+app.data.waktu.delay)
+
+      },
+      loadConfig: function () {
+        var app = this.$app
+        var indexObj = app.data.indexObj
+
+        var server = app.data.config.mainServer;
+        if (indexObj.cekInternet() == true) {
+          app.request.json(
+            server + 'getConfig2.php', {},
+            function (data) {
+              app.data.dist_tolerancy = parseInt(data.dist_tolerancy)
+            },
+            function (err) {
+            }
+
+          )
+        } else {
+          app.data.dist_tolerancy = 100
+        }
+      },
+      doScanning: function () {
+
+        var app = this.$app;
+        var router = this.$f7router;
+        var jq = app.data.JQ;
+        var jsonpObj = app.data.jsonpObj;
+        var indexObj = app.data.indexObj;
+
+        cordova.plugins.barcodeScanner.scan(
+          function (result) {
+            var input = result.text;
+            var dataString = 'qrcode=' + input + '&operator=' + app.data.loginfo.Name
+            if (indexObj.cekInternet() == true) {
+              jsonpObj.getTarget(app, 'getInfoqrcode.php', dataString, function (st, dat) {
+                //app.dialog.alert('Test'+st+'-'+dat+'-'+dataString)
+                if (st == "ok") {
+                  var data = JSON.parse(dat)
+                  var norek = data.nomorrekening;
+                  var namapelanggan = data.namapelanggan;
+                  var alamat = data.alamat;
+                  // app.dialog.alert(norek+','+namapelanggan+','+alamat)
+                  app.data.userinfo = { norek: norek, namapelanggan: namapelanggan, alamat: alamat }
+                  router.navigate("/pd_pagepelanggan/")
+                } else {
+                  app.dialog.alert('Kode QR tidak dikenali!');
+                }
+              })
+            } else {//tidak ada internet
+              var webObj = app.data.webObj
+              var sql = "SELECT tp.namapelanggan,tp.nomorrekening,tp.alamat FROM tblpelanggan tp JOIN tblopp topp ON topp.nomorrekening = tp.nomorrekening JOIN map_koordinatpelanggan tmkp ON tmkp.nomorrekening = tp.nomorrekening WHERE tmkp.qrcode = '" + input + "'  AND topp.operator ='" + app.data.loginfo.Name + "'"
+              console.log(sql)
+              webObj.selectQuery(app.data.OPENDB, sql, function (st, data) {
+                if (st == "ok") {
+                  var data = data
+                  var norek = data.nomorrekening;
+                  var namapelanggan = data.namapelanggan;
+                  var alamat = data.alamat;
+                  // app.dialog.alert(norek+','+namapelanggan+','+alamat)
+                  app.data.userinfo = { norek: norek, namapelanggan: namapelanggan, alamat: alamat }
+                  router.navigate("/pd_pagepelanggan/")
+                } else {
+                  app.dialog.alert('Kode QR tidak dikenali!');
+                }
+              })
+            }
+
+          })
+      },
+      resetCek: function () {
+        var app = this.$app;
+        app.data.pinfo = {}
+        app.data.wminfo = {}
+        app.data.gambarinfo = {}
+      }
+
+    },
+    on: {
+
+      pageMounted: function (e, page) {
+        this.namaAnggota = "mounted"
+      },
+      pageInit: function (e, page) {
+        this.openLogin()
+        // this.loadProductCategory()
+        this.loadConfig()
+
+      },
+      pageBeforeIn: function (e, page) {
+
+      },
+      pageAfterIn: function (e, page) {
+
+      },
+      pageBeforeOut: function (e, page) {
+
+      },
+      pageAfterOut: function (e, page) {
+
+      },
+      pageBeforeRemove: function (e, page) {
+
+      },
+
+    }
+
+
+  }
+</script>

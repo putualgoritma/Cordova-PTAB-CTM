@@ -1,0 +1,550 @@
+<template>
+  <div class="page" data-name="pd_bacameter">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="/pd_pagegambar/" class="link">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">BACK</span>
+          </a>
+        </div>
+        <div class="title">PENCATATAN METER</div>
+
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block">
+        <div class="text-align-center">{{waktu}}</div>
+        <div class="text-align-center">
+          <h3>PERUMDA TIRTA AMERTHA BUANA TABANAN</h3>
+        </div>
+      </div>
+
+      <div class="card">
+
+        <div class="row">
+          <div class="col-100">
+            <img src="{{imageSrc}}" style="width: 100%;" id="myImage">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <h2>Tipe Baca ( {{namastatus}} )</h2>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <div class="list">
+              <ul>
+                <li>
+                  <a class="item-link smart-select smart-select-init" data-open-in="sheet">
+                    <select name="tipebaca" id="tipebaca" @change="ubahTipe">
+                      <!--<option value="mac" selected>Mac</option>
+                            <option value="windows">Windows</option>-->
+                      <option value="terbaca">Terbaca</option>
+                      {{#each tipebaca}}
+                      <option value="{{this.id}}">{{this.NamaStatus}}</option>
+                      {{/each}}
+
+                    </select>
+                    <div class="item-content">
+                      <div class="item-inner">
+                        <div class="item-title" style="font-size: 17px;">Pilih</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <h2>Angka Meteran</h2>
+            <div>(Angka meter bulan lalu: {{this.pencatatanmeter_prev}})</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <input type="number" name="meteran" placeholder="0000">
+          </div>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <a href="#" @click="simpanmeteran" class="button button-fill button-big">PROSES</a>
+          </div>
+
+        </div>
+
+
+        <div class="row">
+          <div class="col-100 text-align-center">
+            <h2>Operator : {{operator}}</h2>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-100">
+            <a href="#" @click="batal" class="button button-fill button-big">BATAL</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<style scoped>
+  .button {
+    height: 40px;
+    font-size: 17px;
+    padding-top: 8px;
+  }
+
+  select {
+    height: 40px;
+    font-size: 17px;
+  }
+
+  input {
+    height: 40px;
+    width: 100%;
+    border: 1px solid black;
+    font-size: 20px;
+    text-align: center;
+  }
+</style>
+<script>
+  export default {
+    data: function () {
+
+      return {
+        waktu: '--',
+        info: {},
+        operator: '',
+        tipebaca: [],
+        arrstatus: [],
+        tipestatus: 'manual',
+        namastatus: 'terbaca',
+        date_get: {},
+        imageSrc: './static/images/wmmeter.png',
+        pencatatanmeter_prev: 0,
+      }
+    },
+    methods: {
+      init: function (page) {
+        //alert('we,re back')
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var self = this;
+        var indexObj = app.data.indexObj
+        var dataString = 'username=' + username
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        var waktu = app.data.Moment2().tz("Asia/Makassar").format("d, DD MMM YYYY");
+        var thari = waktu.split(',')
+        var nhari = parseInt(thari[0])
+        var namahari = hari[nhari]
+        var waktu = namahari + ', ' + thari[1];
+
+        this.$setState({ waktu: waktu })
+        this.$setState({ operator: app.data.loginfo.Name })
+        this.loadtipe();
+        var jcari = []
+        var date_get = indexObj.date_get();
+        this.$setState({ date_get: date_get })
+        if (indexObj.cekInternet() == true) {
+          var dataString = 'type=1'
+          jsonpObj.getTarget(app, 'getdateserver.php', dataString, function (st, pesan) {
+            if (st == "ok") {
+              jcari = JSON.parse(pesan)
+              self.$setState({ date_get: jcari })
+            }
+          })
+        }        
+        //load info plg
+        if (indexObj.cekInternet() == true) {
+          var dataString = 'nomorrekening=' + app.data.pinfo.nomorrekening + '&month=' + self.date_get.mm + '&year=' + self.date_get.yyyy
+          jsonpObj.getTarget(app, 'getpemakaianlalu.php', dataString, function (st, dat, avg) {
+            if (st == "ok") {
+              var dat = JSON.parse(dat)
+              app.data.pinfo.pencatatanmeterprev = dat.pencatatanmeter
+              self.$setState({ pencatatanmeter_prev: app.data.pinfo.pencatatanmeterprev })
+            }
+          })
+        } else {//no internet          
+          this.$setState({ pencatatanmeter_prev: app.data.pinfo.pencatatanmeterprev })
+        }
+        this.$setState({ imageSrc: app.data.gambarinfo })
+      },
+      simpanmeteran: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var router = this.$f7router;
+        var date_get = this.date_get;
+
+        app.data.datelog.datecatatf1 = date_get.yyyy + '-' + date_get.mm + '-' + date_get.dd
+        app.data.datelog.datecatatf2 = date_get.mm_string + ' ' + date_get.dd + ', ' + date_get.yyyy + ', ' + date_get.hh + ':' + date_get.mnt + ':' + date_get.sec + ' ' + date_get.mid
+        app.data.datelog.datecatatf3 = date_get.yyyy + '-' + date_get.mm + '-' + date_get.dd + ' ' + date_get.hh + ':' + date_get.mnt + ':' + date_get.sec
+
+        //alert (app.data.datelog.datecatatf3)
+
+        app.data.wminfo = {}
+
+        //check if selisih minus
+        var meteran = jq('input[name=meteran').val()
+        var tipebaca = jq('select[name=tipebaca]').val()
+
+        var pemakaianair_prev = app.data.pinfo.pemakaianairprev
+        var pencatatanmeter_prev = app.data.pinfo.pencatatanmeterprev
+        var pencatatanmeter_dif = meteran - pencatatanmeter_prev;
+        //if <=0 & tipebaca = terbaca
+        if (pencatatanmeter_dif < 0 && tipebaca == "terbaca") {
+          app.dialog.alert('Pemakaian minus, mohon di cek kembali! Kemungkinan salah catat, stand tunggu, stand kembali atau tipe baca lainnya. Info angka meter bulan lalu: ' + pencatatanmeter_prev)
+        } else {
+          if (this.tipestatus == "manual") {
+            var tipebaca = jq('select[name=tipebaca]').val()
+            var meteran = jq('input[name=meteran').val()
+            var pemakaian_avg_max = 3 * parseInt(app.data.pinfo.pemakaian_avg)
+            if (pencatatanmeter_dif <= pemakaian_avg_max) {
+              if ((meteran != '' && parseInt(meteran) >= 0)) {
+                //alert(tipebaca +','+meteran)
+                var data = { wmstatus: this.tipestatus, namastatus: tipebaca, meteran: meteran, hitung: 'manual', opp: this.operator }
+                app.data.wminfo = data
+                //get location detail
+                var options_nav = {
+                  enableHighAccuracy: true,
+                  maximumAge: 3600000
+                };
+                app.preloader.show()
+
+                if (indexObj.cekInternet() == true) {
+                  navigator.geolocation.getCurrentPosition(function (position) {
+                    app.data.locationgmap.lat = position.coords.latitude
+                    app.data.locationgmap.lng = position.coords.longitude
+                    app.data.locationgmap.accuracy = position.coords.accuracy
+                    //app.dialog.alert('Berhasil'+app.data.locationgmap.lat)
+                    app.preloader.hide()
+                    router.navigate('/pd_pagekirim/')
+                  }, function (error) {
+                    app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu' + error.code);
+                  }, options_nav);
+                } else {
+                  navigator.geolocation.getCurrentPosition(function (position) {
+                    app.data.locationgmap.lat = position.coords.latitude
+                    app.data.locationgmap.lng = position.coords.longitude
+                    app.data.locationgmap.accuracy = position.coords.accuracy
+                    //app.dialog.alert('Berhasil'+app.data.locationgmap.lat)
+                    app.preloader.hide()
+                    router.navigate('/pd_pagekirim/')
+                  }, function (error) {
+                    app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu' + error.code);
+                  }, options_nav);
+                }
+
+              } else {
+                app.dialog.alert('Mohon isi Nilai Meteran Pelanggan dengan benar.')
+              }
+            } else {
+              app.dialog.confirm('Nilai pemakaian tidak boleh lebih besar 3x pemakaian rata-rata 3 bulan terakhir. Mau lanjut ke proses berikutnya atau mau dicek kembali?', function () {
+                if ((meteran != '' && parseInt(meteran) > 0)) {
+                  //alert(tipebaca +','+meteran)
+                  var data = { wmstatus: this.tipestatus, namastatus: tipebaca, meteran: meteran, hitung: 'manual', opp: this.operator }
+                  app.data.wminfo = data
+                  //get location detail
+                  var options_nav = {
+                    enableHighAccuracy: true,
+                    maximumAge: 3600000
+                  };
+                  app.preloader.show()
+
+                  if (indexObj.cekInternet() == true) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                      app.data.locationgmap.lat = position.coords.latitude
+                      app.data.locationgmap.lng = position.coords.longitude
+                      app.data.locationgmap.accuracy = position.coords.accuracy
+                      //app.dialog.alert('Berhasil'+app.data.locationgmap.lat)
+                      app.preloader.hide()
+                      router.navigate('/pd_pagekirim/')
+                    }, function (error) {
+                      app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu' + error.code);
+                    }, options_nav);
+                  } else {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                      app.data.locationgmap.lat = position.coords.latitude
+                      app.data.locationgmap.lng = position.coords.longitude
+                      app.data.locationgmap.accuracy = position.coords.accuracy
+                      //app.dialog.alert('Berhasil'+app.data.locationgmap.lat)
+                      app.preloader.hide()
+                      router.navigate('/pd_pagekirim/')
+                    }, function (error) {
+                      app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu' + error.code);
+                    }, options_nav);
+                  }
+
+                } else {
+                  app.dialog.alert('Mohon isi Nilai Meteran Pelanggan dengan benar.')
+                }
+              });
+            }
+
+          } else //tipestatus == 'average' || tipestatus == 'idle' || tipestatus == 'stop'
+          {
+            var tipebaca = jq('select[name=tipebaca]').val()
+            //var meteran = jq('input[name=meteran').val() 
+            var wmstatus = this.tipestatus
+
+            var meteran_avg = 0
+            if (indexObj.cekInternet() == true) {
+              var dataString = 'nomorrekening=' + app.data.pinfo.nomorrekening + '&month=' + date_get.mm + '&year=' + date_get.yyyy
+              jsonpObj.getTarget(app, 'getavgpemakaian.php', dataString, function (st, dat) {
+                //app.dialog.alert('Test'+st+'-'+dataString)
+                if (st == "ok") {
+                  meteran_avg = dat
+                  if (wmstatus != 'average') {
+                    meteran_avg = pencatatanmeter_prev
+                  }
+                  //app.dialog.alert('Test-'+meteran_avg)
+                  var data = { wmstatus: wmstatus, namastatus: tipebaca, meteran: meteran_avg, hitung: 'otomatis', opp: username }
+                  app.data.wminfo = data
+
+                  //get location detail
+                  var options_nav = {
+                    enableHighAccuracy: true,
+                    maximumAge: 3600000
+                  };
+                  app.preloader.show()
+
+                  navigator.geolocation.getCurrentPosition(function (position) {
+                    app.data.locationgmap.lat = position.coords.latitude
+                    app.data.locationgmap.lng = position.coords.longitude
+                    app.data.locationgmap.accuracy = position.coords.accuracy
+                    //app.dialog.alert('Berhasil'+app.data.locationgmap.lat)
+                    app.preloader.hide()
+                    router.navigate('/pd_pagekirim/')
+                  }, function (error) {
+                    app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu' + error.code);
+                  }, options_nav);
+                } else {
+                  app.dialog.alert('Rata-rata 3 bulan terakhir tidak didapat')
+                }
+              })
+            } else {
+              //meteran_avg = dat
+              //meteran_avg = pencatatanmeter_prev+app.data.pinfo.meteran_avg
+              meteran_avg = pencatatanmeter_prev + parseInt(app.data.pinfo.pemakaian_avg)
+              if (wmstatus != 'average') {
+                meteran_avg = pencatatanmeter_prev
+              }
+              //app.dialog.alert('Test-'+meteran_avg)
+              var data = { wmstatus: wmstatus, namastatus: tipebaca, meteran: meteran_avg, hitung: 'otomatis', opp: username }
+              app.data.wminfo = data
+
+              //get location detail
+              var options_nav = {
+                enableHighAccuracy: true,
+                maximumAge: 3600000
+              };
+              app.preloader.show()
+
+              navigator.geolocation.getCurrentPosition(function (position) {
+                app.data.locationgmap.lat = position.coords.latitude
+                app.data.locationgmap.lng = position.coords.longitude
+                app.data.locationgmap.accuracy = position.coords.accuracy
+                //app.dialog.alert('Berhasil'+app.data.locationgmap.lat)
+                app.preloader.hide()
+                router.navigate('/pd_pagekirim/')
+              }, function (error) {
+                app.dialog.alert('Maaf, Aktifkan GPS anda, terlebih dahulu' + error.code);
+              }, options_nav);
+            }
+          }
+        }
+
+
+      },
+      loadtipe: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var self = this
+        var arrstatus = [];
+        if (indexObj.cekInternet() == true) {
+          // var server= app.data.config.mainServer+'getwmstatus.php'
+          jsonpObj.getTarget(app, 'getwmstatus.php', {}, function (st, pesan) {
+
+            if (st == "ok") {
+              var data = JSON.parse(pesan)
+              self.$setState({ tipebaca: data })
+              // console.log(data)
+              //initial
+              if (typeof app.data.wminfo.meteran != 'undefined') {
+                jq('input[name=meteran]').val(app.data.wminfo.meteran)
+              }
+              if (typeof app.data.wminfo.namastatus != 'undefined') {
+                // ('select[name=tipebaca]').val(app.data.wminfo.namastatus)
+                //$('#MySelectionBox').val(123).change();
+                //jq("#tipebaca").val(app.data.wminfo.namastatus).change();
+                var NamaStatus = self.cariNamaStatus(data, app.data.wminfo.namastatus)
+                self.$setState({ namastatus: NamaStatus })
+                var tipestatus = self.cariStatus(data, app.data.wminfo.namastatus)
+                self.$setState({ tipestatus: tipestatus })
+                if (tipestatus == 'average' || tipestatus == 'idle' || tipestatus == 'stop') {
+                  jq('input[name=meteran]').attr('disabled', 'disabled');
+
+                  jq('input[name=meteran]').val('0')
+                  jq('input[name=meteran]').css('background-color', 'gray')
+                }
+                else {
+                  jq('input[name=meteran]').removeAttr('disabled');
+                  jq('input[name=meteran]').css('background-color', 'white')
+                }
+
+
+              }
+
+            }
+
+          })
+        } else {
+          //offline
+          var sql = "SELECT * FROM tblstatuswm limit 18";
+          var webObj = app.data.webObj
+          var arrstatus = { '103': 'average', '102': 'average', '101': 'average', '104': 'average', '105': 'average', '106': 'manual', '107': 'idle', '108': 'idle', '109': 'manual', '110': 'idle', '111': 'manual', '112': 'manual', '113': 'average', '114': 'stop', '115': 'average', '116': 'average', '117': 'idle' }
+          var datum = []
+
+          webObj.selectQuery2(app.data.OPENDB, sql, function (st, dat) {
+            if (st == "ok") {
+              // console.log(dat)
+              //  console.log(dat.length)
+              for (var i in dat) {
+                if (dat[i].id !== '-' && dat[i].id != "113") {
+
+                  if (typeof dat[i].id == "undefined") {
+                  }
+                  else {
+                    var status = arrstatus[dat[i].id]
+                    datum.push({ id: dat[i].id, NamaStatus: dat[i].NamaStatus, smsstatus: dat[i].smsstatus, status: status })
+
+                  }
+
+                }
+              }
+
+              console.log(datum)
+              self.$setState({ tipebaca: datum })
+              // console.log(data)
+              //initial
+              if (typeof app.data.wminfo.meteran != 'undefined') {
+                jq('input[name=meteran]').val(app.data.wminfo.meteran)
+              }
+              if (typeof app.data.wminfo.namastatus != 'undefined') {
+                // ('select[name=tipebaca]').val(app.data.wminfo.namastatus)
+                //$('#MySelectionBox').val(123).change();
+                //jq("#tipebaca").val(app.data.wminfo.namastatus).change();
+                var NamaStatus = self.cariNamaStatus(datum, app.data.wminfo.namastatus)
+                self.$setState({ namastatus: NamaStatus })
+                var tipestatus = self.cariStatus(datum, app.data.wminfo.namastatus)
+                self.$setState({ tipestatus: tipestatus })
+                if (tipestatus == 'average' || tipestatus == 'idle' || tipestatus == 'stop') {
+                  jq('input[name=meteran]').attr('disabled', 'disabled');
+
+                  jq('input[name=meteran]').val('0')
+                  jq('input[name=meteran]').css('background-color', 'gray')
+                }
+                else {
+                  jq('input[name=meteran]').removeAttr('disabled');
+                  jq('input[name=meteran]').css('background-color', 'white')
+                }
+
+
+              }
+            }
+          })
+        }
+
+      },
+      ubahTipe: function () {
+        var app = this.$app;
+        var indexObj = app.data.indexObj;
+        var jsonpObj = app.data.jsonpObj;
+        var username = app.data.user.username;
+        var jq = app.data.JQ;
+        var tipebacaid = jq('select[name=tipebaca]').val()
+        var NamaStatus = this.cariNamaStatus(this.tipebaca, tipebacaid)
+        this.$setState({ namastatus: NamaStatus })
+        var tipestatus = this.cariStatus(this.tipebaca, tipebacaid)
+        this.$setState({ tipestatus: tipestatus })
+        if (tipestatus == 'average' || tipestatus == 'idle' || tipestatus == 'stop') {
+          jq('input[name=meteran]').attr('disabled', 'disabled');
+
+          jq('input[name=meteran]').val('0')
+          jq('input[name=meteran]').css('background-color', 'gray')
+        }
+        else {
+          jq('input[name=meteran]').removeAttr('disabled');
+          jq('input[name=meteran]').css('background-color', 'white')
+        }
+
+
+      },
+      cariStatus: function (data, key) {
+        var rsl = 'manual';
+        if (key != 'terbaca') {
+          for (var i in data)//this.tipebaca
+          {
+            if (data[i].id == key) {
+              rsl = data[i].status;
+              break;
+            }
+          }
+        }
+
+        return rsl;
+      },
+      cariNamaStatus: function (data, key) {
+        var rsl = 'Terbaca';
+        if (key != 'terbaca') {
+          for (var i in data)//this.tipebaca
+          {
+            if (data[i].id == key) {
+              rsl = data[i].NamaStatus;
+              break;
+            }
+          }
+        }
+
+        return rsl;
+      },
+      batal: function () {
+        var app = this.$app;
+        var router = this.$f7router;
+        app.data.pinfo = {}
+        app.data.wminfo = {}
+        app.data.gambarinfo = {}
+        router.navigate('/home/')
+      }
+
+    },
+    on: {
+      pageInit: function (e, page) {
+        this.init(page)
+      }
+    }
+
+  };
+</script>
