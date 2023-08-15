@@ -88,7 +88,7 @@
 
         <div class="row">
           <div class="col-100">
-            <a href="#" @click="kirimtest" class="button button-fill button-big">TEST KIRIM DATA</a>
+            <a href="#" @click="kirim" class="button button-fill button-big">KIRIM DATA</a>
           </div>
         </div>
 
@@ -171,7 +171,7 @@
         var datelog = app.data.datelog
 
         //alert('status sm '+app.data.pinfo.statussmprev)
-        alert('test mode')
+        //alert('test mode')
 
         var kontak = pinfo.telp
         if (pinfo.telp == "" || pinfo.telp.length < 5) {
@@ -293,8 +293,8 @@
             if (indexObj.cekInternet() == true) {
               this.info.statusonoff= 'on'
               var info_data = JSON.stringify(this.info)
-              alert(info_data)
-              // this.sendDataMeter()
+              //alert(info_data)
+              this.sendDataMeter()
               //var date_get = indexObj.date_get();
               //alert(str_out+'- Local: '+date_get.dd+'-'+date_get.mm+'-'+date_get.yyyy)
             } else {

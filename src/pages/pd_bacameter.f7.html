@@ -344,7 +344,7 @@
             } else {
               //meteran_avg = dat
               //meteran_avg = pencatatanmeter_prev+app.data.pinfo.meteran_avg
-              meteran_avg = pencatatanmeter_prev + parseInt(app.data.pinfo.pemakaian_avg)
+              meteran_avg = parseInt(pencatatanmeter_prev) + parseInt(app.data.pinfo.pemakaian_avg)
               if (wmstatus != 'average') {
                 meteran_avg = pencatatanmeter_prev
               }
@@ -424,7 +424,7 @@
           //offline
           var sql = "SELECT * FROM tblstatuswm limit 18";
           var webObj = app.data.webObj
-          var arrstatus = { '103': 'average', '102': 'average', '101': 'average', '104': 'average', '105': 'average', '106': 'manual', '107': 'idle', '108': 'idle', '109': 'manual', '110': 'idle', '111': 'manual', '112': 'manual', '113': 'average', '114': 'stop', '115': 'average', '116': 'average', '117': 'idle' }
+          var arrstatus = { '103': 'average', '102': 'average', '101': 'average', '104': 'average', '105': 'average', '106': 'manual', '107': 'idle', '108': 'idle', '109': 'manual', '110': 'idle', '111': 'manual', '112': 'manual', '113': 'average', '114': 'stop', '115': 'average', '116': 'average', '117': 'idle', '119': 'idle' }
           var datum = []
 
           webObj.selectQuery2(app.data.OPENDB, sql, function (st, dat) {
